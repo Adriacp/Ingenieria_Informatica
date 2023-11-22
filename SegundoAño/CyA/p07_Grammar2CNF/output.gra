@@ -1,0 +1,34 @@
+3
+a
+b
+c
+9
+A
+B
+S
+T
+U
+V
+W
+X
+Y
+19
+A --> a
+B --> b
+S --> AT
+S --> AU
+S --> AV
+S --> AB
+T --> XW
+U --> BX
+V --> XB
+W --> BX
+X --> AY
+X --> BY
+X --> a
+X --> b
+Y --> AY
+Y --> BY
+Y --> a
+Y --> b
+Y --> c

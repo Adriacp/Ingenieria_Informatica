@@ -1,0 +1,40 @@
+#! /usr/bin/vvp
+:ivl_version "11.0 (stable)";
+:ivl_delay_selection "TYPICAL";
+:vpi_time_precision + 0;
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/system.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_sys.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/vhdl_textio.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/v2005_math.vpi";
+:vpi_module "/usr/lib/x86_64-linux-gnu/ivl/va_math.vpi";
+S_0x55f054388d90 .scope module, "compl2" "compl2" 2 1;
+ .timescale 0 0;
+    .port_info 0 /OUTPUT 4 "Out";
+    .port_info 1 /INPUT 4 "Inp";
+    .port_info 2 /INPUT 1 "cpl";
+o0x7f85b2a9d018 .functor BUFZ 4, C4<zzzz>; HiZ drive
+v0x55f0543d2430_0 .net "Inp", 3 0, o0x7f85b2a9d018;  0 drivers
+v0x55f0543d2520_0 .net "Out", 3 0, L_0x55f0543d2b40;  1 drivers
+L_0x7f85b2a54018 .functor BUFT 1, C4<0001>, C4<0>, C4<0>, C4<0>;
+v0x55f0543d25e0_0 .net/2u *"_ivl_0", 3 0, L_0x7f85b2a54018;  1 drivers
+o0x7f85b2a9d0a8 .functor BUFZ 1, C4<z>; HiZ drive
+v0x55f0543d26d0_0 .net "cpl", 0 0, o0x7f85b2a9d0a8;  0 drivers
+v0x55f0543d27a0_0 .net "temp1", 3 0, L_0x55f0543d2970;  1 drivers
+L_0x55f0543d2b40 .arith/sum 4, L_0x55f0543d2970, L_0x7f85b2a54018;
+S_0x55f054388f70 .scope module, "compl1_1" "compl1" 2 4, 3 1 0, S_0x55f054388d90;
+ .timescale 0 0;
+    .port_info 0 /OUTPUT 4 "Out";
+    .port_info 1 /INPUT 4 "Inp";
+    .port_info 2 /INPUT 1 "cpl";
+L_0x55f0543aef30 .functor NOT 4, o0x7f85b2a9d018, C4<0000>, C4<0000>, C4<0000>;
+v0x55f0543c25e0_0 .net "Inp", 3 0, o0x7f85b2a9d018;  alias, 0 drivers
+v0x55f0543d2150_0 .net "Out", 3 0, L_0x55f0543d2970;  alias, 1 drivers
+v0x55f0543d2230_0 .net *"_ivl_0", 3 0, L_0x55f0543aef30;  1 drivers
+v0x55f0543d22f0_0 .net "cpl", 0 0, o0x7f85b2a9d0a8;  alias, 0 drivers
+L_0x55f0543d2970 .functor MUXZ 4, o0x7f85b2a9d018, L_0x55f0543aef30, o0x7f85b2a9d0a8, C4<>;
+# The file index is used to find the file name in the following table.
+:file_names 4;
+    "N/A";
+    "<interactive>";
+    "compl2.v";
+    "compl1.v";
