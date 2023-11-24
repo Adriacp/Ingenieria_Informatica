@@ -75,6 +75,43 @@ std::expected<int, std::error_code> open_file(const std::string& path, int flags
   return fd;
 }
 
+std::optional<sockaddr_in> make_ip_address(
+  const std::optional<std::string> ip_address, uint16_t port) {
+  //in_addr_t ipAddress = inet_addr(ip_address.value().c_str());
+
+  sockaddr_in remote_address {}; //en c++ es una inicializacion por valor, automaticamente crea un codigo para generarlo a 0, es decir asi me aseguro que esta a 0, ahora relleno los campos que necesito.
+  remote_address.sin_family = AF_INET; //familia af_inet
+  remote_address.sin_addr.s_addr = htonl(INADDR_LOOPBACK); //los protocolos en internet trabaja en bigendian, pero la mayoria de nuestros ordenadores estan en little endian, htonl, hace la conversion a nuestro endian, ya sea little o big
+  remote_address.sin_port = htons(port); //esta vez es htons(network short) pero sigue siendo por big y littl endian
+  return remote_address;
+}
+
+std::expected<int, std::error_code> make_socket(
+  std::optional<sockaddr_in> address = std::nullopt) {
+    int fd_socket=socket(AF_INET,SOCK_DGRAM,0); //creamos un socket AF_INET:IPv4 Internet protocols SOCK_DGRAM: Supports datagrams (connectionless, unreliable messages ofa fixed maximum length).
+    if(fd_socket<0) {
+      std::error_code error (errno, std::system_category());
+      return std::unexpected(error);
+    }
+    return fd_socket;
+  }
+
+std::error_code send_to(int fd_socket, const std::vector<uint8_t>& buffer, 
+  const sockaddr_in& remote_address) {
+  size_t bytes_sent = sendto(
+                  fd_socket,
+                  buffer.data(),
+                  buffer.size(),
+                  0,
+                  reinterpret_cast<const sockaddr*>(&remote_address), //puntero sockaddr a la direccion de remote_addres
+                  sizeof(remote_address));
+    if(bytes_sent<0) {
+      std::error_code error(errno, std::system_category());
+      return error;
+  }
+return std::error_code (0, std::system_category());
+}
+
 
 //int open(const char *pathname, int flags, mode_t mode);
 std::error_code write_file(int fd, const std::vector<uint8_t>& buffer);
@@ -109,41 +146,52 @@ int main(int argc, char** argv) {
   }
 
   //aqui va el socket y toda la parte del netcpclase.cpp
-    
-    int fd_socket=socket(AF_INET,SOCK_DGRAM,0); //creamos un socket AF_INET:IPv4 Internet protocols SOCK_DGRAM: Supports datagrams (connectionless, unreliable messages ofa fixed maximum length).
-    if(fd_socket<0) {
-        std::cerr << "Error en socket" << std::endl;
-        return EXIT_FAILURE;
-    }
+    //make socket
 
-auto src_guard=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
-            [fd_socket] { close(fd_socket); }
-            ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
 
 //la libreria de linux esta escrita en C
 
 // Adress to send to
-  sockaddr_in remote_address {}; //en c++ es una inicializacion por valor, automaticamente crea un codigo para generarlo a 0, es decir asi me aseguro que esta a 0, ahora relleno los campos que necesito.
-  remote_address.sin_family = AF_INET; //familia af_inet
-  remote_address.sin_addr.s_addr = htonl(INADDR_LOOPBACK); //los protocolos en internet trabaja en bigendian, pero la mayoria de nuestros ordenadores estan en little endian, htonl, hace la conversion a nuestro endian, ya sea little o big
-  remote_address.sin_port = htons(8080); //esta vez es htons(network short) pero sigue siendo por big y littl endian
-  //funciona bien, solo tengo qeu cambiar lo que hay en testfile2 con el mensaje.
+//make address
+const std::optional<std::string> ip_address("127.0.0.1");
+uint16_t port(8080);
+
+auto remote_address = make_ip_address(ip_address, port);
+if(!remote_address) {
+  std::cerr << "Error al crear la ip\n";
+  return EXIT_FAILURE;
+}
+//socket
+int fd_socket;
+auto result = make_socket(remote_address.value());
+if(result) {
+  fd_socket = result.value();
+}
+else {
+  std::cerr << "error al crear el socket\n";
+  return EXIT_FAILURE;
+}
+
+//asignar la direccion al socket
+if (bind(fd_socket, reinterpret_cast<sockaddr*>(&remote_address), sizeof(remote_address)) == -1) {
+    std::cerr << "Error al enlazar el socket a la dirección." << std::endl;
+    close(fd_socket);
+    return EXIT_FAILURE;
+  }
+
+//scope_exit para que siempre se cierre el socket
+auto src_guard=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
+            [fd_socket] { close(fd_socket); }
+            ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
 
 //uso la funcion sendto
 //tenemos que hacer una conversion porque sendto coge socketaddr y tenemos socketaddr_in
-size_t bytes_sent = sendto(
-                fd_socket,
-                buffer.data(),
-                buffer.size(),
-                0,
-                reinterpret_cast<const sockaddr*>(&remote_address), //puntero sockaddr a la direccion de remote_addres
-                sizeof(remote_address));
-
-if(bytes_sent<0) {
-    std::cerr << "Error sendto" << std::endl;
-    return EXIT_FAILURE;
-}
-
+std::error_code send_result = send_to(fd_socket, buffer, remote_address.value());
+  
+  if (send_result) {
+    close(fd.value());
+    return error.value();
+  }
 close(fd_socket);
 std::cout << "Fin OK" << std::endl;
 //return EXIT_SUCCESS;

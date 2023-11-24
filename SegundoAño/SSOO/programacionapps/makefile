@@ -1,5 +1,5 @@
-CTDS = g++ -o
-CFLAGS = -std=c++2b
+CTDS = g++-13 -o
+CFLAGS = -std=c++23
 
 netcp: netcp.cpp
 	$(CTDS) netcp $(CFLAGS) netcp.cpp
