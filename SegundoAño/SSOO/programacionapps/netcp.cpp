@@ -26,6 +26,7 @@ void Usage() {
 struct program_options {
   bool show_help = false;
   std::string output_filename;
+  bool listening = false;
 };
 
 std::optional<program_options> parse_args(int argc, char** argv) {
@@ -35,9 +36,9 @@ std::optional<program_options> parse_args(int argc, char** argv) {
     if(*it == "-h" || *it == "--help") {
       options.show_help = true;
     }
-    if(*it == "-o" || *it == "--output") {
+    if(*it == "-l") {
       if(++it != end) {
-        std::cout << *it;
+        options.listening = true;
         options.output_filename = *it;
       }
       else {
