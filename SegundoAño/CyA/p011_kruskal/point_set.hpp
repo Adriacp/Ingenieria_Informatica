@@ -6,7 +6,7 @@
 #include "point_types.hpp"
 
 
-typedef std::vector<sub_tree> forest;
+typedef std::vector<EMST::sub_tree> forest;
 
     class point_set : public CyA::point_vector
     {
