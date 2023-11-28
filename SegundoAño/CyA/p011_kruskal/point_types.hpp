@@ -29,3 +29,5 @@ std::ostream& operator<<(std::ostream& os, const CyA::point& ps);
 
 std::istream& operator>>(std::istream& is, CyA::point_vector& ps);
 std::istream& operator>>(std::istream& is, CyA::point& ps);
+
+//neato sample.dot -m -Tpng -o sample.png
