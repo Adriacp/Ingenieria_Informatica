@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "point_set.hpp"
+#include "point_types.hpp"
 
     void point_set::EMST(void)
     {
