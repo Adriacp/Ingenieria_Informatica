@@ -1,0 +1,1 @@
+wc -l cuenta las lineas que le llegan por la salida estandar
