@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
 
   if (error) {
     close(fd.value());
+    error.message();
     return error.value();
   }
 
@@ -185,12 +186,17 @@ auto src_guard=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c
             [fd_socket] { close(fd_socket); }
             ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
 
+auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
+            [fd] { close(fd.value()); }
+            ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
+
 //uso la funcion sendto
 //tenemos que hacer una conversion porque sendto coge socketaddr y tenemos socketaddr_in
 std::error_code send_result = send_to(fd_socket, buffer, remote_address.value());
   
   if (send_result) {
     close(fd.value());
+    send_result.message();
     return error.value();
   }
 close(fd_socket);
