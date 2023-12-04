@@ -2,7 +2,7 @@
 #include <vector>
 
 #include <sys/stat.h>
-#include <fcmtl.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     int fds[2]; //un array de tamaño 2
     int return_code=pipe(fds); // fds[0] es el extremo de lectura fds[1] el extremo de escritura
     if(return_code<0) {
-        st::cerr<"Error at pipe\n";
+        std::cerr<<"Error at pipe\n";
         close(fd);
         return EXIT_FAILURE;
     }
@@ -40,20 +40,20 @@ int main(int argc, char **argv) {
     if(pid>0) {
 
         close(fds[1]); //ya que no voy a usar el de escritura
-        char buffer(256); //esto seria mi buffer
+        char buffer[256]; //esto seria mi buffer
         int nbytes=0;
         do{
             nbytes=read(fds[0], buffer, 256); //read_file
             write(fd, buffer, nbytes); //send to //habria que usar el write sobre fds[1] en caso de recepcion;           
         } while(nbytes>0);
         if(nbytes<0)
-            std::cerr<"Error at READ\n";
+            std::cerr<<"Error at READ\n";
         close(fds[0]);
         int status;
         // lo ejecuta solamente el proceso padre, ese pid es el valor pid del hijo creado correctamente, nuevo proceso
         bool flag=true;
         while(flag) {
-        int res waitpid(pid, &status,WNOHANG); //esto hace que el proceso se que da a la espera hasta que se cierre el hijo, ahroa no se bloquea       
+        int res = waitpid(pid, &status,WNOHANG); //esto hace que el proceso se que da a la espera hasta que se cierre el hijo, ahroa no se bloquea       
         if(res!=0)
             flag=false;
         } //con esta funcion puedo consultar si el proceso hijo ha terminado o no. ahora el proceso padre no se bloquea y podría hacer otras cosas dentro de ese bucle

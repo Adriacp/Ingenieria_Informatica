@@ -28,6 +28,7 @@ struct program_options {
   bool show_help = false;
   std::string output_filename;
   bool listening = false;
+  std::string listener_filename;
 };
 
 std::optional<program_options> parse_args(int argc, char** argv) {
@@ -40,7 +41,7 @@ std::optional<program_options> parse_args(int argc, char** argv) {
     if(*it == "-l") {
       if(++it != end) {
         options.listening = true;
-        options.output_filename = *it;
+        options.listener_filename = *it;
       }
       else {
         std::cerr << "Error...\n";
@@ -118,34 +119,30 @@ return std::error_code (0, std::system_category());
 //int open(const char *pathname, int flags, mode_t mode);
 std::error_code write_file(int fd, const std::vector<uint8_t>& buffer);
 
-int main(int argc, char** argv) {
-  
-  
-  auto options = parse_args(argc, argv);
-  if(!options) return EXIT_FAILURE;
-  if(options.value().show_help) print_usage();
-
-
-  const char *filename = argv[1];
-  int flags = O_RDONLY | O_CREAT;
+std::error_code netcp_send_file(const std::string& filename) {
+  std::cout << "hola funcion send_file\n";
+  //const char *archivo = filename;
+  int flags = O_RDONLY;
   mode_t filemode = 0666;
   
   std::expected<int, std::error_code> fd = open_file(filename, flags, filemode);
   if(!fd.has_value()) {
+    std::error_code error(errno, std::system_category());
     std::cerr << "Error al abrir el archivo\n";
-    return EXIT_FAILURE; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
+    return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
   }
 
   //fd -> descriptor de archivo, resulta que la funcion open ya está creada
 
   std::vector<uint8_t> buffer(1024);
   
-  std::error_code error = read_file(fd.value(), buffer);
+  std::error_code error_read = read_file(fd.value(), buffer);
 
-  if (error) {
+  if (error_read) {
     close(fd.value());
-    error.message();
-    return error.value();
+    error_read.message();
+    std::error_code error (errno, std::system_category());
+    return error;
   }
 
   //aqui va el socket y toda la parte del netcpclase.cpp
@@ -162,7 +159,8 @@ uint16_t port(8080);
 auto remote_address = make_ip_address(ip_address, port);
 if(!remote_address) {
   std::cerr << "Error al crear la ip\n";
-  return EXIT_FAILURE;
+  std::error_code error(errno, std::system_category());
+  return error;
 }
 //socket
 int fd_socket;
@@ -172,15 +170,19 @@ if(result) {
 }
 else {
   std::cerr << "error al crear el socket\n";
-  return EXIT_FAILURE;
+  std::error_code error (errno, std::system_category());
+  return error;
 }
 
 //asignar la direccion al socket
+/*
 if (bind(fd_socket, reinterpret_cast<sockaddr*>(&remote_address), sizeof(remote_address)) == -1) {
     std::cerr << "Error al enlazar el socket a la dirección." << std::endl;
     close(fd_socket);
-    return EXIT_FAILURE;
+    std::error_code error (errno, std::system_category());
+    return error;
   }
+*/ //esto es solo para el recieve?
 
 //scope_exit para que siempre se cierre el socket
 auto src_guard=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
@@ -198,15 +200,47 @@ std::error_code send_result = send_to(fd_socket, buffer, remote_address.value())
   if (send_result) {
     close(fd.value());
     send_result.message();
-    return error.value();
+    return send_result;
   }
 close(fd_socket);
 std::cout << "Fin OK" << std::endl;
 //return EXIT_SUCCESS;
 
   close(fd.value());
+  
+  return std::error_code (0, std::system_category());
+}
 
-  return EXIT_SUCCESS;
+std::error_code netcp_receive_file(const std::string& filename) {
+  std::cout << "hola funcion recieve_file\n";
+  return std::error_code (0, std::system_category());
+}
+
+int main(int argc, char** argv) {
+  
+  auto options = parse_args(argc, argv);
+  if(!options) return EXIT_FAILURE;
+  if(options.value().show_help) {
+    print_usage();
+    return EXIT_SUCCESS;
+  }
+  if(options.value().listening) {
+    std::error_code fallo_listening = netcp_receive_file(options.value().listener_filename);
+    if(fallo_listening) {
+      fallo_listening.message();
+      return fallo_listening.value();
+    }
+  }
+  else {
+    std::error_code fallo_sending = netcp_send_file(argv[1]);
+    if(fallo_sending) {
+      fallo_sending.message();
+      return fallo_sending.value();
+    }
+}
+
+return EXIT_SUCCESS;
+
 }
 /*Comprobacion:
 dd if=/dev/urandom of=testfile bs=1K count=1 iflag=fullblock //creo un testfile con datos aleatorios menor de 1K
