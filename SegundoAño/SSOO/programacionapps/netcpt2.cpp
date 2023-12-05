@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <string>
 #include <cerrno>
+#include <signal.h>
 
 #include <sys/socket.h> //include socket
 #include <arpa/inet.h> //include htonl
@@ -117,7 +118,7 @@ return std::error_code (0, std::system_category());
 
 std::error_code netcp_send_file(const std::string& filename) {
   
-  std::cout << "hola funcion send_file\n";
+  std::cout << "Modo escritura...\n";
   //const char *archivo = filename;
   
 //hacer el socket
@@ -178,24 +179,6 @@ else {
   usleep(1000);
 }
 
-  //aqui va el socket y toda la parte del netcpclase.cpp
-    //make socket
-
-
-//la libreria de linux esta escrita en C
-
-// Adress to send to
-
-//asignar la direccion al socket
-/*
-if (bind(fd_socket, reinterpret_cast<sockaddr*>(&remote_address), sizeof(remote_address)) == -1) {
-    std::cerr << "Error al enlazar el socket a la dirección." << std::endl;
-    close(fd_socket);
-    std::error_code error (errno, std::system_category());
-    return error;
-  }
-*/ //esto es solo para el recieve?
-
 //scope_exit para que siempre se cierre el socket
 auto src_guard=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
             [fd_socket] { close(fd_socket); }
@@ -206,36 +189,124 @@ auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=
             ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
 
 
-close(fd_socket);
-std::cout << "Fin OK" << std::endl;
-//return EXIT_SUCCESS;
-
+  close(fd_socket);
   close(fd.value());
-  
   return std::error_code (0, std::system_category());
 }
+//receive_from
+std::error_code recieve_from(int fd, std::vector<uint8_t>& buffer, sockaddr_in& address) {
+  socklen_t src_len = sizeof(address);
+  int bytes_recieved = recvfrom(
+                                fd,
+                                buffer.data(),
+                                buffer.size(),
+                                0,
+                                reinterpret_cast<sockaddr*>(&address),
+                                &src_len);
+  
+  if(bytes_recieved < 0) {
+    return std::error_code(errno, std::system_category());
+  }
+  buffer.resize(bytes_recieved);
+  return std::error_code(0, std::system_category());
+}
+
 
 //int open(const char *pathname, int flags, mode_t mode);
-std::error_code write_file(int fd, const std::vector<uint8_t>& buffer);
+std::error_code write_file(int fd, const std::vector<uint8_t>& buffer) {
+  size_t bytes_written = write(
+                  fd,
+                  buffer.data(),
+                  buffer.size());
+    if(bytes_written<0) {
+      return std::error_code(errno, std::system_category());
+  }
+return std::error_code (0, std::system_category());
+}
+
 //recieve from
 
 std::error_code netcp_receive_file(const std::string& filename) { //al hacer el socket hay que usar bind para darle un puerto e ip
-  std::cout << "hola funcion recieve_file\n";
+  std::cout << "Modo escucha...\n";
 
-  //Socket
-  //remote_addres
+//hacer el socket
+//make address
+std::optional<std::string> ip_address;
+char* ip_char = std::getenv("NETCP_IP"); //necesito las variables de entonro para el puerto y para la ip
+if(!ip_char) {
+  ip_address = "127.0.0.1";
+}
+else {
+  ip_address = ip_char;
+}
+char* puerto_char = std::getenv("NETCP_PORT");
+uint16_t port;
+if(puerto_char) {
+  port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10)); // no funciona
+}
+else {
+  port = 8080;
+}
 
-  //open archivo
+  auto remote_address = make_ip_address(ip_address, port);
+  if(!remote_address) {
+    std::cerr << "Error al crear la ip\n";
+    std::error_code error(errno, std::system_category());
+    return error;
+  }
+  //socket
+  int fd_socket;
+  auto result = make_socket(remote_address.value());
+  if(result) {
+    fd_socket = result.value();
+  }
+  else {
+    std::cerr << "error al crear el socket\n";
+    std::error_code error (errno, std::system_category());
+    return error;
+  }
 
-  //buffer 1kb
+  //asignar la dirección al socket
+  if (bind(fd_socket, reinterpret_cast<sockaddr*>(&remote_address), sizeof(remote_address)) == -1) {
+    std::cerr << "Error al enlazar el socket a la dirección." << std::endl;
+    close(fd_socket);
+    std::error_code error (errno, std::system_category());
+    return error;
+  }
 
-  //while(buffer.size() > 0)
-  //receive_from (funcion)
-  //resize(buffer con nbytes) //esto va dentro de receive_from asi que aqui solo hago manejo de errores
-  //if buffer.size == 0; romper bucle, else write
-  //fin del while
+  int flags = O_RDONLY | O_CREAT; // si no existe tengo que crearlo
+  mode_t filemode = 0666;
+  
+  //abrir el archivo
+  std::expected<int, std::error_code> fd = open_file(filename, flags, filemode);
+  if(!fd.has_value()) {
+    std::error_code error(errno, std::system_category());
+    std::cerr << "Error al abrir el archivo\n";
+    return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
+  }
+
+  std::vector<uint8_t> buffer(1024);
+  
+  while(true) {
+    std::error_code recieve_result = recieve_from(fd.value(), buffer, remote_address.value());
+    if(recieve_result) {
+      std::cerr << "Error al recibir el archivo\n";
+      return std::error_code(errno, std::system_category());
+    }
+    if(!buffer.empty()) {
+      std::error_code write_result = write_file(fd.value(), buffer);
+      if(write_result) {
+        std::cerr << "Error al escribir el archivo\n";
+        return std::error_code(errno, std::system_category());
+      }
+    } else {
+      break;
+    }
+  }
 
   //devolver recursos
+  close(fd_socket);
+  close(fd.value());
   return std::error_code (0, std::system_category());
 }
 
@@ -262,6 +333,8 @@ int main(int argc, char** argv) {
     }
 }
 
+std::cout << "fin ok\n";
+
 return EXIT_SUCCESS;
 
 }
@@ -269,4 +342,21 @@ return EXIT_SUCCESS;
 dd if=/dev/urandom of=testfile bs=1K count=1 iflag=fullblock //creo un testfile con datos aleatorios menor de 1K
 netcat -lu 8080 > testfile2 hago un testfile 2 volcando la info
 cmp testfile testfile2 para comprobar si son iguales
-*/
+
+  //aqui va el socket y toda la parte del netcpclase.cpp
+    //make socket
+
+
+//la libreria de linux esta escrita en C
+
+// Adress to send to
+
+//asignar la direccion al socket
+/*
+if (bind(fd_socket, reinterpret_cast<sockaddr*>(&remote_address), sizeof(remote_address)) == -1) {
+    std::cerr << "Error al enlazar el socket a la dirección." << std::endl;
+    close(fd_socket);
+    std::error_code error (errno, std::system_category());
+    return error;
+  }
+*/ //esto es solo para el recieve?
