@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
   std::ifstream tape_file;
   CheckOpening(tape_file, tape_file_name);
   TM.Simulate(tape_file);
+  
   return 0;
 
 }

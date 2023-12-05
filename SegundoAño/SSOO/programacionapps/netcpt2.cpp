@@ -115,43 +115,12 @@ std::error_code send_to(int fd_socket, const std::vector<uint8_t>& buffer,
 return std::error_code (0, std::system_category());
 }
 
-
-//int open(const char *pathname, int flags, mode_t mode);
-std::error_code write_file(int fd, const std::vector<uint8_t>& buffer);
-
 std::error_code netcp_send_file(const std::string& filename) {
+  
   std::cout << "hola funcion send_file\n";
   //const char *archivo = filename;
-  int flags = O_RDONLY;
-  mode_t filemode = 0666;
   
-  std::expected<int, std::error_code> fd = open_file(filename, flags, filemode);
-  if(!fd.has_value()) {
-    std::error_code error(errno, std::system_category());
-    std::cerr << "Error al abrir el archivo\n";
-    return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
-  }
-
-  //fd -> descriptor de archivo, resulta que la funcion open ya está creada
-
-  std::vector<uint8_t> buffer(1024);
-  
-  std::error_code error_read = read_file(fd.value(), buffer);
-
-  if (error_read) {
-    close(fd.value());
-    error_read.message();
-    std::error_code error (errno, std::system_category());
-    return error;
-  }
-
-  //aqui va el socket y toda la parte del netcpclase.cpp
-    //make socket
-
-
-//la libreria de linux esta escrita en C
-
-// Adress to send to
+//hacer el socket
 //make address
 const std::optional<std::string> ip_address("127.0.0.1");
 uint16_t port(8080);
@@ -173,6 +142,49 @@ else {
   std::error_code error (errno, std::system_category());
   return error;
 }
+  
+  int flags = O_RDONLY;
+  mode_t filemode = 0666;
+  
+  //abrir el archivo
+  std::expected<int, std::error_code> fd = open_file(filename, flags, filemode);
+  if(!fd.has_value()) {
+    std::error_code error(errno, std::system_category());
+    std::cerr << "Error al abrir el archivo\n";
+    return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
+  }
+
+  //fd -> descriptor de archivo, resulta que la funcion open ya está creada
+  std::vector<uint8_t> buffer(1024);
+  while(buffer.size() > 0) {
+  //si el tamaño del buffer es mayor a 0 eso significa que todavia hay bytes por leer. 
+  std::error_code error_read = read_file(fd.value(), buffer);
+ //el tamaño del buffer indica la cantidad de bytes leidos
+  if (error_read) {
+    close(fd.value());
+    error_read.message();
+    std::error_code error (errno, std::system_category());
+    return error;
+  }
+  //uso la funcion sendto
+  //tenemos que hacer una conversion porque sendto coge socketaddr y tenemos socketaddr_in
+  std::error_code send_result = send_to(fd_socket, buffer, remote_address.value());
+  
+  if (send_result) {
+    close(fd.value());
+    send_result.message();
+    return send_result;
+  }
+  usleep(1000);
+}
+
+  //aqui va el socket y toda la parte del netcpclase.cpp
+    //make socket
+
+
+//la libreria de linux esta escrita en C
+
+// Adress to send to
 
 //asignar la direccion al socket
 /*
@@ -193,15 +205,7 @@ auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=
             [fd] { close(fd.value()); }
             ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
 
-//uso la funcion sendto
-//tenemos que hacer una conversion porque sendto coge socketaddr y tenemos socketaddr_in
-std::error_code send_result = send_to(fd_socket, buffer, remote_address.value());
-  
-  if (send_result) {
-    close(fd.value());
-    send_result.message();
-    return send_result;
-  }
+
 close(fd_socket);
 std::cout << "Fin OK" << std::endl;
 //return EXIT_SUCCESS;
@@ -211,8 +215,27 @@ std::cout << "Fin OK" << std::endl;
   return std::error_code (0, std::system_category());
 }
 
-std::error_code netcp_receive_file(const std::string& filename) {
+//int open(const char *pathname, int flags, mode_t mode);
+std::error_code write_file(int fd, const std::vector<uint8_t>& buffer);
+//recieve from
+
+std::error_code netcp_receive_file(const std::string& filename) { //al hacer el socket hay que usar bind para darle un puerto e ip
   std::cout << "hola funcion recieve_file\n";
+
+  //Socket
+  //remote_addres
+
+  //open archivo
+
+  //buffer 1kb
+
+  //while(buffer.size() > 0)
+  //receive_from (funcion)
+  //resize(buffer con nbytes) //esto va dentro de receive_from asi que aqui solo hago manejo de errores
+  //if buffer.size == 0; romper bucle, else write
+  //fin del while
+
+  //devolver recursos
   return std::error_code (0, std::system_category());
 }
 
