@@ -168,7 +168,6 @@ else {
     std::cerr << "Error al abrir el archivo\n";
     return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
   }
-
   //fd -> descriptor de archivo, resulta que la funcion open ya está creada
   std::vector<uint8_t> buffer(1024);
   while(buffer.size() > 0) {
@@ -184,7 +183,6 @@ else {
   //uso la funcion sendto
   //tenemos que hacer una conversion porque sendto coge socketaddr y tenemos socketaddr_in
   std::error_code send_result = send_to(fd_socket, buffer, remote_address.value());
-  
   if (send_result) {
     close(fd.value());
     send_result.message();
@@ -207,19 +205,19 @@ auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=
   close(fd.value());
   return std::error_code (0, std::system_category());
 }
-//receive_from
+//recieve_from
 std::error_code recieve_from(int fd, std::vector<uint8_t>& buffer, sockaddr_in& address) {
   socklen_t src_len = sizeof(address);
-  int bytes_recieved = recvfrom(
+  int bytes_recieved;
+  while(true) {
+  bytes_recieved = recvfrom(
                                 fd,
                                 buffer.data(),
                                 buffer.size(),
                                 0,
                                 reinterpret_cast<sockaddr*>(&address),
                                 &src_len);
-  
-  if(bytes_recieved < 0) {
-    return std::error_code(errno, std::system_category());
+  if(bytes_recieved > 0) break;
   }
   buffer.resize(bytes_recieved);
   return std::error_code(0, std::system_category());
@@ -239,7 +237,6 @@ return std::error_code (0, std::system_category());
 }
 
 //recieve from
-
 std::error_code netcp_receive_file(const std::string& filename) { //al hacer el socket hay que usar bind para darle un puerto e ip
   std::cout << "Modo escucha...\n";
   // NO se como gestionar señales para que en el modo escucha espere la entrada.
@@ -249,7 +246,7 @@ std::error_code netcp_receive_file(const std::string& filename) { //al hacer el 
 std::optional<std::string> ip_address;
 char* ip_char = std::getenv("NETCP_IP"); //necesito las variables de entonro para el puerto y para la ip
 if(!ip_char) {
-  ip_address = "127.0.0.1";
+  ip_address = "0.0.0.0";
 }
 else {
   ip_address = ip_char;
@@ -303,7 +300,7 @@ else {
   std::vector<uint8_t> buffer(1024);
   
   while(true) {
-    std::error_code recieve_result = recieve_from(fd.value(), buffer, remote_address.value());
+    std::error_code recieve_result = recieve_from(fd_socket, buffer, remote_address.value());
     if(recieve_result) {
       std::cerr << "Error al recibir el archivo\n";
       return std::error_code(errno, std::system_category());
