@@ -9,28 +9,24 @@ point_set::point_set(const CyA::point_vector &points) {
     //definicion constructor
 }
 
-void point_set::EMST(void)
-{
+void point_set::EMST(void) {
   CyA::arc_vector av;
   compute_arc_vector(av);
 
   forest st;
 
-  for (const CyA::point &p : *this)
-  {
+  for (const CyA::point &p : *this) {
     EMST::sub_tree s;
     s.add_point(p);
 
     st.push_back(s);
   }
 
-  for (const CyA::weigthed_arc &a : av)
-  {
+  for (const CyA::weigthed_arc &a : av) {
     int i, j;
     find_incident_subtrees(st, a.second, i, j);
 
-    if (i != j)
-    {
+    if (i != j) {
       merge_subtrees(st, a.second, i, j);
     }
   }

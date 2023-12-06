@@ -209,7 +209,6 @@ auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=
 std::error_code recieve_from(int fd, std::vector<uint8_t>& buffer, sockaddr_in& address) {
   socklen_t src_len = sizeof(address);
   int bytes_recieved;
-  while(true) {
   bytes_recieved = recvfrom(
                                 fd,
                                 buffer.data(),
@@ -217,21 +216,18 @@ std::error_code recieve_from(int fd, std::vector<uint8_t>& buffer, sockaddr_in& 
                                 0,
                                 reinterpret_cast<sockaddr*>(&address),
                                 &src_len);
-  if(bytes_recieved > 0) break;
-  }
   buffer.resize(bytes_recieved);
-  std::cout << "recibido\n";
   return std::error_code(0, std::system_category());
 }
 
 
 //int open(const char *pathname, int flags, mode_t mode);
 std::error_code write_file(int fd, const std::vector<uint8_t>& buffer) {
-  size_t bytes_written = write(
+  ssize_t bytes_written = write(
                   fd,
                   buffer.data(),
                   buffer.size());
-    if(bytes_written<0) {
+    if(bytes_written == -1) {
       return std::error_code(errno, std::system_category());
   }
 return std::error_code (0, std::system_category());
@@ -300,6 +296,7 @@ else {
   }
 
   std::vector<uint8_t> buffer(1024);
+
   while(true) {
     std::error_code recieve_result = recieve_from(fd_socket, buffer, remote_address.value());
     if(recieve_result) {
@@ -310,7 +307,7 @@ else {
       std::error_code write_result = write_file(fd.value(), buffer);
       if(write_result) {
         std::cerr << "Error al escribir el archivo\n";
-        return std::error_code(errno, std::system_category());
+        return write_result;
       }
     } else {
       break;
@@ -318,8 +315,8 @@ else {
   }
 
   //devolver recursos
-  close(fd_socket);
   close(fd.value());
+  close(fd_socket);
   return std::error_code (0, std::system_category());
 }
 
