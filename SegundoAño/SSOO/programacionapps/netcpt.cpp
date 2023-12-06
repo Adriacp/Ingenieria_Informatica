@@ -118,13 +118,27 @@ return std::error_code (0, std::system_category());
 
 std::error_code netcp_send_file(const std::string& filename) {
   
-  std::cout << "Modo escritura...\n";
+  std::cout << "Modo envio...\n";
   //const char *archivo = filename;
   
 //hacer el socket
 //make address
-const std::optional<std::string> ip_address("127.0.0.1");
-uint16_t port(8080);
+std::optional<std::string> ip_address;
+char* ip_char = std::getenv("NETCP_IP"); //necesito las variables de entonro para el puerto y para la ip
+if(!ip_char) {
+  ip_address = "127.0.0.1";
+}
+else {
+  ip_address = ip_char;
+}
+char* puerto_char = std::getenv("NETCP_PORT");
+uint16_t port;
+if(puerto_char) {
+  port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10));
+}
+else {
+  port = 8080;
+}
 
 auto remote_address = make_ip_address(ip_address, port);
 if(!remote_address) {
@@ -228,6 +242,7 @@ return std::error_code (0, std::system_category());
 
 std::error_code netcp_receive_file(const std::string& filename) { //al hacer el socket hay que usar bind para darle un puerto e ip
   std::cout << "Modo escucha...\n";
+  // NO se como gestionar señales para que en el modo escucha espere la entrada.
 
 //hacer el socket
 //make address
@@ -242,7 +257,7 @@ else {
 char* puerto_char = std::getenv("NETCP_PORT");
 uint16_t port;
 if(puerto_char) {
-  port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10)); // no funciona
+  port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10));
 }
 else {
   port = 8080;
@@ -342,21 +357,4 @@ return EXIT_SUCCESS;
 dd if=/dev/urandom of=testfile bs=1K count=1 iflag=fullblock //creo un testfile con datos aleatorios menor de 1K
 netcat -lu 8080 > testfile2 hago un testfile 2 volcando la info
 cmp testfile testfile2 para comprobar si son iguales
-
-  //aqui va el socket y toda la parte del netcpclase.cpp
-    //make socket
-
-
-//la libreria de linux esta escrita en C
-
-// Adress to send to
-
-//asignar la direccion al socket
-/*
-if (bind(fd_socket, reinterpret_cast<sockaddr*>(&remote_address), sizeof(remote_address)) == -1) {
-    std::cerr << "Error al enlazar el socket a la dirección." << std::endl;
-    close(fd_socket);
-    std::error_code error (errno, std::system_category());
-    return error;
-  }
-*/ //esto es solo para el recieve?
+*/
