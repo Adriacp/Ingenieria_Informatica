@@ -5,10 +5,8 @@
 
 #include "point_types.hpp"
 
-namespace EMST
-{
-    class sub_tree
-    {
+namespace EMST {
+    class sub_tree {
     private:
         CyA::tree arcs_;
         CyA::point_collection points_;

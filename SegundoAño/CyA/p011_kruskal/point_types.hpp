@@ -8,8 +8,7 @@
 #define MAX_SZ 3
 #define MAX_PREC 0
 
-namespace CyA
-{
+namespace CyA {
     typedef std::pair<double, double> point;
 
     typedef std::pair<point, point> line;
