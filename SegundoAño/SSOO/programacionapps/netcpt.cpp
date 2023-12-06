@@ -220,6 +220,7 @@ std::error_code recieve_from(int fd, std::vector<uint8_t>& buffer, sockaddr_in& 
   if(bytes_recieved > 0) break;
   }
   buffer.resize(bytes_recieved);
+  std::cout << "recibido\n";
   return std::error_code(0, std::system_category());
 }
 
@@ -238,7 +239,8 @@ return std::error_code (0, std::system_category());
 
 //recieve from
 std::error_code netcp_receive_file(const std::string& filename) { //al hacer el socket hay que usar bind para darle un puerto e ip
-  std::cout << "Modo escucha...\n";
+  std::cout << "Modo escucha...\n"
+               "Esperando recepción...\n";
   // NO se como gestionar señales para que en el modo escucha espere la entrada.
 
 //hacer el socket
@@ -298,7 +300,6 @@ else {
   }
 
   std::vector<uint8_t> buffer(1024);
-  
   while(true) {
     std::error_code recieve_result = recieve_from(fd_socket, buffer, remote_address.value());
     if(recieve_result) {
