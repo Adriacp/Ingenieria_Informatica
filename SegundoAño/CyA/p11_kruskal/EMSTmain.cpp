@@ -14,10 +14,22 @@
 // 07/12/2023 - Creación del código
 
 #include <iostream>
+#include <fstream>
 
-int main(int argc, char** argv) {
+#include "tools.cpp"
+
+/// @brief Función principal que se encarga de invocar a las funciones para el correcto funcionamiento del programa
+/// @param argc numero de parámetros pasados por línea de comandos
+/// @param argv array con los parámetros pasados por línea de comandos
+/// @return codigo de error
+int main(int argc, char* argv[]) {
  //Usage
+  Usage(argc, argv);
  //abrir el archivo
+  std::string pointfilename{argv[1]};
+  std::ifstream pointfile;
+  CheckOpening(pointfile, pointfilename);
  //hacer la funcion de transformacion
  //imprimir el archivo en otro
+ return EXIT_SUCCESS;
 }
