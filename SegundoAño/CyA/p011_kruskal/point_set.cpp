@@ -63,11 +63,34 @@ void point_set::write(std::ostream &os) const {
     }
 
     void point_set::find_incident_subtrees(const forest &st, const CyA::arc &a, int &i, int &j) const {
-        //definicion find_incident_subtrees
+        i = j = -1;  // Inicializar índices con un valor no válido
+
+      for (int index = 0; index < st.size(); ++index) {
+        const EMST::sub_tree &subtree = st[index];
+
+        // Comprobar si los extremos del arco están en el mismo subárbol
+        if (subtree.contains(a.first) || subtree.contains(a.second)) {
+          if (i == -1) {
+              i = index;
+          } else {
+              j = index;
+              break;  // Se encontraron ambos subárboles, salir del bucle
+          }
+        }
+      }
     }
 
     void point_set::merge_subtrees(forest &st, const CyA::arc &a, int i, int j) const {
-        //definicion merge_subtrees
+        //Verifico si los indices son válidos
+        if (i < 0 || i >= st.size() || j < 0 || j >= st.size()) {
+         std::cerr << "Error en los indices al fusionar\n";
+         exit(EXIT_FAILURE);
+        }
+        // Fusionar los subárboles en st[index_i] y st[index_j]
+        st[i].merge(st[j], a);
+
+        // Eliminamos el subárbol fusionado de st
+        st.erase(st.begin() + j);
     }
 
     double point_set::compute_cost(void) const {
