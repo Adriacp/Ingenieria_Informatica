@@ -21,7 +21,7 @@
 #include "sub_tree.hpp"
 
 point_set::point_set(const CyA::point_vector &points) {
-    EMST();
+  //constructor
 }
 
 /// @brief Funcion que genera el árbol generador mínimo euclidiano 

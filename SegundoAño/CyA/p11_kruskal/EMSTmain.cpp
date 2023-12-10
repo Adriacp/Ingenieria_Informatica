@@ -42,8 +42,8 @@ int main(int argc, char* argv[]) {
 for (const auto& point : vector_de_puntos) {
     std::cout << point.first << " " << point.second << std::endl;
 }
-    //point_set Conjunto_de_puntos(vector_de_puntos);
-    //Conjunto_de_puntos.EMST();
+    point_set Conjunto_de_puntos(vector_de_puntos);
+    Conjunto_de_puntos.EMST();
  //imprimir el archivo en otro
     std::ofstream outFile(argv[2]);
 
@@ -51,7 +51,7 @@ for (const auto& point : vector_de_puntos) {
         std::cerr << "Error al abrir el archivo de salida." << std::endl;
     }
 
-    //Conjunto_de_puntos.write_tree(outFile);
+    Conjunto_de_puntos.write_tree(outFile);
 
     outFile.close();
 
