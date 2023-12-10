@@ -21,12 +21,17 @@
 #include "sub_tree.hpp"
 
 point_set::point_set(const CyA::point_vector &points) {
-    //definicion constructor
+    EMST();
 }
 
 /// @brief Funcion que genera el árbol generador mínimo euclidiano 
 /// @param  void
 void point_set::EMST(void) {
+  if (this->empty()) {
+    // Manejar el caso en el que el vector de puntos está vacío
+    std::cerr << "Error, vector vacio\n";
+    exit(EXIT_SUCCESS);
+  }
   CyA::arc_vector av;
   compute_arc_vector(av);
 
@@ -52,7 +57,12 @@ void point_set::EMST(void) {
 }
 
 void point_set::write_tree(std::ostream &os) const {
-    //definicion write_tree
+    for (const auto &arc : emst_) {
+        os << "(" << arc.first.first << ", " << arc.first.second << ") -> (" 
+           << arc.second.first << ", " << arc.second.second << ")\n";
+    }
+
+    os << compute_cost() << std::endl;
 }
 
 void point_set::write(std::ostream &os) const {
@@ -110,16 +120,22 @@ void point_set::find_incident_subtrees(const forest &st, const CyA::arc &a, int 
 /// @param i indice
 /// @param j indice
 void point_set::merge_subtrees(forest &st, const CyA::arc &a, int i, int j) const {
-  //Verifico si los indices son válidos
-  if (i < 0 || i >= st.size() || j < 0 || j >= st.size()) {
-    std::cerr << "Error en los indices al fusionar\n";
-    exit(EXIT_FAILURE);
-  }
-  // Fusionar los subárboles en st[index_i] y st[index_j]
-  st[i].merge(st[j], a);
+    // Fusionar los subárboles i y j en el subárbol i
 
-  // Eliminamos el subárbol fusionado de st
-  st.erase(st.begin() + j);
+    // Obtener el subárbol i y j
+    EMST::sub_tree &subtree_i = st[i];
+    const EMST::sub_tree &subtree_j = st[j];
+
+    // Fusionar los arcos del subárbol j al subárbol i
+    for (const auto &arc_j : subtree_j.get_arcs()) {
+        subtree_i.add_arc(arc_j);
+    }
+
+    // Agregar el arco a al subárbol i
+    subtree_i.add_arc(a);
+
+    // Eliminar el subárbol j fusionado
+    st.erase(st.begin() + j);
 }
 
 double point_set::compute_cost(void) const {
