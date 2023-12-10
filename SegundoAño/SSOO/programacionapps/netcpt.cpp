@@ -168,6 +168,17 @@ else {
     std::cerr << "Error al abrir el archivo\n";
     return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
   }
+
+  
+//scope_exit para que siempre se cierre el socket
+auto src_guard=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
+            [fd_socket] { close(fd_socket); }
+            ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
+
+auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
+            [fd] { close(fd.value()); }
+            ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
+
   //fd -> descriptor de archivo, resulta que la funcion open ya está creada
   std::vector<uint8_t> buffer(1024);
   while(buffer.size() > 0) {
@@ -190,16 +201,6 @@ else {
   }
   usleep(1000);
 }
-
-//scope_exit para que siempre se cierre el socket
-auto src_guard=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
-            [fd_socket] { close(fd_socket); }
-            ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
-
-auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=c++2b netcpclase.cpp
-            [fd] { close(fd.value()); }
-            ); //si fd socket sale del bloque donde se definio se llama a fd_socket close, por lo que no hay que poner close en cada detección de error.
-
 
   close(fd_socket);
   close(fd.value());
@@ -284,7 +285,7 @@ else {
     return error;
   }
 
-  int flags = O_RDONLY | O_CREAT; // si no existe tengo que crearlo
+  int flags = O_WRONLY | O_CREAT | O_TRUNC; // si no existe tengo que crearlo el error es que tenia O_RDONLY por lo que no podia escribir en el archivo.
   mode_t filemode = 0666;
   
   //abrir el archivo
