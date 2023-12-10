@@ -16,6 +16,9 @@
 #include <iostream>
 #include <fstream>
 
+#include "point_types.hpp"
+#include "point_set.hpp"
+
 /// @brief funcion usage para comprobar el correcto paso de parámetros
 /// @param argc numero de parámetros
 /// @param argv array con los parámetros
@@ -43,4 +46,21 @@ void CheckOpening(std::ifstream& file, std::string file_name) {
     std::cerr << "Error al abrir el archivo, comprueba el archivo de entrada" << std::endl;
     exit(EXIT_FAILURE);
   }
+}
+
+CyA::point_vector CrearVector(std::ifstream& pointfile) {
+  int num_puntos;
+  pointfile >> num_puntos;
+
+  CyA::point_vector vector_de_puntos;
+
+  double a, b;
+
+  for(int i = 0; i < num_puntos; ++i) {
+    pointfile >> a >> b;
+    vector_de_puntos.push_back(std::make_pair(a, b));
+  }
+  pointfile.close();
+
+  return vector_de_puntos;
 }

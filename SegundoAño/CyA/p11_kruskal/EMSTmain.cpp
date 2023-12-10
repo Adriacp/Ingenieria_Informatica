@@ -17,6 +17,8 @@
 #include <fstream>
 
 #include "tools.cpp"
+#include "point_types.hpp"
+#include "point_set.hpp"
 
 /// @brief Función principal que se encarga de invocar a las funciones para el correcto funcionamiento del programa
 /// @param argc numero de parámetros pasados por línea de comandos
@@ -30,6 +32,11 @@ int main(int argc, char* argv[]) {
   std::ifstream pointfile;
   CheckOpening(pointfile, pointfilename);
  //hacer la funcion de transformacion
+ //sacar del archivo los puntos, transformarlos a points y despues esos meterlos en un point_vector
+ CyA::point_vector vector_de_puntos = CrearVector(pointfile);
+     for (const auto& punto : vector_de_puntos) {
+        std::cout << "(" << punto.first << ", " << punto.second << ")" << std::endl;
+    }
  //imprimir el archivo en otro
  return EXIT_SUCCESS;
 }

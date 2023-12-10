@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "point_types.hpp"
+#include "sub_tree.hpp"
 
 
 typedef std::vector<EMST::sub_tree> forest;
