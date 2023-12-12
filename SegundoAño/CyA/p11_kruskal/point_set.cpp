@@ -21,17 +21,20 @@
 #include "sub_tree.hpp"
 
 point_set::point_set(const CyA::point_vector &points) {
-  //constructor
+  emst_.clear();
 }
 
 /// @brief Funcion que genera el árbol generador mínimo euclidiano 
 /// @param  void
 void point_set::EMST(void) {
+  /*
   if (this->empty()) {
     // Manejar el caso en el que el vector de puntos está vacío
     std::cerr << "Error, vector vacio\n";
     exit(EXIT_SUCCESS);
   }
+  */
+  
   CyA::arc_vector av;
   compute_arc_vector(av);
 
@@ -47,10 +50,10 @@ void point_set::EMST(void) {
   for (const CyA::weigthed_arc &a : av) {
     int i, j;
     find_incident_subtrees(st, a.second, i, j);
-
     if (i != j) {
       merge_subtrees(st, a.second, i, j);
     }
+    
   }
 
   emst_ = st[0].get_arcs();
@@ -97,19 +100,13 @@ void point_set::compute_arc_vector(CyA::arc_vector &av) const {
 /// @param i indice
 /// @param j indice
 void point_set::find_incident_subtrees(const forest &st, const CyA::arc &a, int &i, int &j) const {
-  i = j = -1;  // Inicializar índices con un valor no válido
+  for(int k = 0; k < st.size(); k++) {
+    if(st[k].contains(a.first)) {
+      i = k;
+    }
+    else if(st[k].contains(a.second)) {
 
-  for (int index = 0; index < st.size(); ++index) {
-    const EMST::sub_tree &subtree = st[index];
-
-    // Comprobar si los extremos del arco están en el mismo subárbol
-    if (subtree.contains(a.first) || subtree.contains(a.second)) {
-      if (i == -1) {
-        i = index;
-      } else {
-          j = index;
-          break;  // Se encontraron ambos subárboles, salir del bucle
-        }
+      j = k;
     }
   }
 }
@@ -120,22 +117,9 @@ void point_set::find_incident_subtrees(const forest &st, const CyA::arc &a, int 
 /// @param i indice
 /// @param j indice
 void point_set::merge_subtrees(forest &st, const CyA::arc &a, int i, int j) const {
-    // Fusionar los subárboles i y j en el subárbol i
-
-    // Obtener el subárbol i y j
-    EMST::sub_tree &subtree_i = st[i];
-    const EMST::sub_tree &subtree_j = st[j];
-
-    // Fusionar los arcos del subárbol j al subárbol i
-    for (const auto &arc_j : subtree_j.get_arcs()) {
-        subtree_i.add_arc(arc_j);
-    }
-
-    // Agregar el arco a al subárbol i
-    subtree_i.add_arc(a);
-
-    // Eliminar el subárbol j fusionado
-    st.erase(st.begin() + j);
+  CyA::weigthed_arc enlace {euclidean_distance(a), a};
+  st[i].merge(st[j], enlace);
+  st.erase(st.begin() + j);
 }
 
 double point_set::compute_cost(void) const {

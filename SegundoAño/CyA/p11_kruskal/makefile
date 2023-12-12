@@ -1,5 +1,5 @@
 CTDS = g++
-CFLAGS = -Wall -g
+CFLAGS = -g
 
 TM_simulator: EMSTmain.cpp point_set.cpp point_types.cpp sub_tree.cpp
 	$(CTDS) $(CFLAGS) EMSTmain.cpp point_set.cpp point_types.cpp sub_tree.cpp -o EMST

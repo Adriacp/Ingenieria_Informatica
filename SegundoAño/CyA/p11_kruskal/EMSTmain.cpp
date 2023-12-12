@@ -33,25 +33,21 @@ int main(int argc, char* argv[]) {
   CheckOpening(pointfile, pointfilename);
  //hacer la funcion de transformacion
  //sacar del archivo los puntos, transformarlos a points y despues esos meterlos en un point_vector
- CyA::point_vector vector_de_puntos = CrearVector(pointfile);
  /* IMPRESION
      for (const auto& punto : vector_de_puntos) {
         std::cout << "(" << punto.first << ", " << punto.second << ")" << std::endl;
     }
 */
-for (const auto& point : vector_de_puntos) {
-    std::cout << point.first << " " << point.second << std::endl;
-}
-    point_set Conjunto_de_puntos(vector_de_puntos);
-    Conjunto_de_puntos.EMST();
+    CyA::point_vector vector_de_puntos;
+    point_set conjunto_de_puntos(vector_de_puntos);
+    pointfile >> vector_de_puntos;
  //imprimir el archivo en otro
+    conjunto_de_puntos.EMST();
     std::ofstream outFile(argv[2]);
 
     if (!outFile.is_open()) {
         std::cerr << "Error al abrir el archivo de salida." << std::endl;
     }
-
-    Conjunto_de_puntos.write_tree(outFile);
 
     outFile.close();
 
