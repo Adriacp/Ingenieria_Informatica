@@ -1,7 +1,7 @@
 CTDS = g++-13 -o
 CFLAGS = -std=c++23
 
-netcp: netcpt.cpp
+netcp: netcp.cpp
 	$(CTDS) netcp $(CFLAGS) netcpt.cpp
 
 .PHONY: clean

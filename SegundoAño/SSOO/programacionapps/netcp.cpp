@@ -1,3 +1,15 @@
+// Universidad de La Laguna
+// Escuela Superior de Ingeniería y Tecnología
+// Grado en Ingeniería Informática
+// Asignatura: Sistemas operativos
+// Curso: 2º
+// Práctica 2: Programación de apps
+// Autor: Adrián Manuel Acuña Perdomo
+// Correo: alu0101592084@ull.edu.es
+// Fecha: 18/12/2023
+// Archivo netcp.cc: Archivo que permite tanto el envio como recepción de archivos
+// 13/12/2023 - Creación del código
+
 #include <iostream> //std::cout/std::cin
 #include <vector> //std::Vector
 #include <optional> //std::optional
@@ -131,13 +143,13 @@ if(!ip_char) {
 else {
   ip_address = ip_char;
 }
-char* puerto_char = std::getenv("NETCP_PORT");
 uint16_t port;
-if(puerto_char) {
-  port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10));
+char* puerto_char = std::getenv("NETCP_PORT");
+if(puerto_char == NULL) {
+  port = 8080;
 }
 else {
-  port = 8080;
+  port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10));
 }
 
 auto remote_address = make_ip_address(ip_address, port);
@@ -252,11 +264,11 @@ else {
 }
 char* puerto_char = std::getenv("NETCP_PORT");
 uint16_t port;
-if(puerto_char) {
-  port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10));
+if(puerto_char == NULL) {
+  port = 8080;
 }
 else {
-  port = 8080;
+  port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10));
 }
 
   auto remote_address = make_ip_address(ip_address, port);
@@ -352,5 +364,8 @@ return EXIT_SUCCESS;
 /*Comprobacion:
 dd if=/dev/urandom of=testfile bs=1K count=1 iflag=fullblock //creo un testfile con datos aleatorios menor de 1K
 netcat -lu 8080 > testfile2 hago un testfile 2 volcando la info
+./netcp -l testfile2
 cmp testfile testfile2 para comprobar si son iguales
 */
+
+//SEÑALES, BIND MAL HECHO? COMPROBADO CON EL EMAIL DE JESUS, VARIABLES DE ENTORNO MAL USADAS AL RECIBIR PERO CREO QUE BIEN AL ENVIAR
