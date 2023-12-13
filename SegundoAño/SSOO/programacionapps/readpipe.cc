@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
         // lo ejecuta solamente el proceso padre, ese pid es el valor pid del hijo creado correctamente, nuevo proceso
         bool flag=true;
         while(flag) {
-        int res = waitpid(pid, &status,WNOHANG); //esto hace que el proceso se que da a la espera hasta que se cierre el hijo, ahroa no se bloquea       
+        int res = waitpid(pid, &status,WNOHANG); //esto hace que el proceso se que da a la espera hasta que se cierre el hijo, ahroa no se bloquea(WHOHANG)       
         if(res!=0)
             flag=false;
         } //con esta funcion puedo consultar si el proceso hijo ha terminado o no. ahora el proceso padre no se bloquea y podría hacer otras cosas dentro de ese bucle
