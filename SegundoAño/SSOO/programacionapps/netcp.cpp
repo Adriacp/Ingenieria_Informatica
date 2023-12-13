@@ -367,5 +367,5 @@ netcat -lu 8080 > testfile2 hago un testfile 2 volcando la info
 ./netcp -l testfile2
 cmp testfile testfile2 para comprobar si son iguales
 */
-
+//exec crea un proceso hijo
 //SEÑALES, BIND MAL HECHO? COMPROBADO CON EL EMAIL DE JESUS, VARIABLES DE ENTORNO MAL USADAS AL RECIBIR PERO CREO QUE BIEN AL ENVIAR
