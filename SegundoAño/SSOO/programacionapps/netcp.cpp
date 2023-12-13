@@ -131,6 +131,7 @@ return std::error_code (0, std::system_category());
 std::error_code netcp_send_file(const std::string& filename) {
   
   std::cout << "Modo envio...\n";
+  std::cout << "Enviando...\n";
   //const char *archivo = filename;
   
 //hacer el socket
@@ -152,6 +153,7 @@ else {
   port = static_cast<uint16_t>(std::strtoul(puerto_char, nullptr, 10));
 }
 
+//Ip
 auto remote_address = make_ip_address(ip_address, port);
 if(!remote_address) {
   std::cerr << "Error al crear la ip\n";
@@ -176,6 +178,7 @@ else {
   //abrir el archivo
   std::expected<int, std::error_code> fd = open_file(filename, flags, filemode);
   if(!fd.has_value()) {
+    close(fd_socket);
     std::error_code error(errno, std::system_category());
     std::cerr << "Error al abrir el archivo\n";
     return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
@@ -218,6 +221,7 @@ auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=
   close(fd.value());
   return std::error_code (0, std::system_category());
 }
+
 //recieve_from
 std::error_code recieve_from(int fd, std::vector<uint8_t>& buffer, sockaddr_in& address) {
   socklen_t src_len = sizeof(address);
@@ -369,3 +373,4 @@ cmp testfile testfile2 para comprobar si son iguales
 */
 //exec crea un proceso hijo
 //SEÑALES, BIND MAL HECHO? COMPROBADO CON EL EMAIL DE JESUS, VARIABLES DE ENTORNO MAL USADAS AL RECIBIR PERO CREO QUE BIEN AL ENVIAR
+//en el reciebe el ip tiene que ser siempre 0.0.0.0? porque yo tengo las de entorno

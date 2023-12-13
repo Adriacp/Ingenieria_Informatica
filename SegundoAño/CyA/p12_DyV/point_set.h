@@ -14,6 +14,10 @@
 // 07/12/2023 - Creación del código
 
 #pragma once
+#include <vector>
+#include <algorithm>
+#include <cmath>
+#include <iostream>
 
 namespace CyA
 {
@@ -32,6 +36,7 @@ namespace CyA
         {
         private:
                 point_vector hull_;
+                //point_vector input_;
  
         public:
                 point_set(const vector<point> &points);
