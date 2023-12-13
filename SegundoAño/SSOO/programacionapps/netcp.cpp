@@ -42,8 +42,12 @@ struct program_options {
   std::string output_filename;
   bool listening = false;
   std::string listener_filename;
+  bool comand_mode = false;
+  std::string comand_string;
+  bool salida_estandar = false;
+  bool salida_error = false;
 };
-
+/*
 std::optional<program_options> parse_args(int argc, char** argv) {
   std::vector<std::string_view> args(argv + 1, argv + argc);
   program_options options;
@@ -56,11 +60,41 @@ std::optional<program_options> parse_args(int argc, char** argv) {
         options.listening = true;
         options.listener_filename = *it;
       }
+    }
+    if (*it == "-c") {
+      options.comand_mode = true;
+      ++it;
+    }
+    if(options.comand_mode) {
+      options.comand_string += *it;
+      options.comand_string += " ";
+    }
+    else {
+        std::cerr << "Error...\n";
+        return std::nullopt;
+      }
+  }
+  return options;
+}
+*/
+std::optional<program_options> parse_args(int argc, char** argv) {
+  std::vector<std::string_view> args(argv + 1, argv + argc);
+  program_options options;
+  for(auto it = args.begin(), end = args.end(); it != end; it++) {
+    if(*it == "-h" || *it == "--help") {
+      options.show_help = true;
+    }
+    if (*it == "-l") {
+      if(++it != end) {
+        options.listening = true;
+        options.listener_filename = *it;
+      }
       else {
         std::cerr << "Error...\n";
         return std::nullopt;
       }
     }
+
   }
   return options;
 }
@@ -359,6 +393,8 @@ int main(int argc, char** argv) {
       fallo_listening.message();
       return fallo_listening.value();
     }
+  } else if(options.value().comand_mode) {
+    std::cout << options.value().comand_string << "\n";
   }
   else {
     std::error_code fallo_sending = netcp_send_file(argv[1]);
