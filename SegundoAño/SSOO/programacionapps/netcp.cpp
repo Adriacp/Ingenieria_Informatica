@@ -233,6 +233,10 @@ std::error_code recieve_from(int fd, std::vector<uint8_t>& buffer, sockaddr_in& 
                                 0,
                                 reinterpret_cast<sockaddr*>(&address),
                                 &src_len);
+  if(bytes_recieved < 0) {
+    std::cerr << "Error en los bytes recibidos\n";
+    return std::error_code(errno, std::system_category());
+  }
   buffer.resize(bytes_recieved);
   return std::error_code(0, std::system_category());
 }
@@ -318,11 +322,15 @@ else {
     std::error_code recieve_result = recieve_from(fd_socket, buffer, remote_address.value());
     if(recieve_result) {
       std::cerr << "Error al recibir el archivo\n";
-      return std::error_code(errno, std::system_category());
+      close(fd.value());
+      close(fd_socket);
+      return recieve_result;
     }
     if(!buffer.empty()) {
       std::error_code write_result = write_file(fd.value(), buffer);
       if(write_result) {
+        close(fd.value());
+        close(fd_socket);
         std::cerr << "Error al escribir el archivo\n";
         return write_result;
       }
