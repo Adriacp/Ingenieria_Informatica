@@ -26,6 +26,8 @@
 #include <string>
 #include <cerrno>
 #include <signal.h>
+#include <string.h>
+#include <atomic>
 
 #include <sys/socket.h> //include socket
 #include <arpa/inet.h> //include htonl
@@ -40,178 +42,37 @@ struct program_options {
   bool listening = false;
   std::string listener_filename;
   bool comand_mode = false;
-  std::string comand_string;
-  bool listening_comand_mode = false;
-  std::string listening_comand_string;
   bool salida_estandar = false;
   bool salida_error = false;
+
+  std::vector<std::string> v_args;
 };
-/*
+
+std::atomic<bool> quit_requested = false;
+
+bool last_arg = false;
+
 std::optional<program_options> parse_args(int argc, char** argv) {
   std::vector<std::string_view> args(argv + 1, argv + argc);
   program_options options;
   for(auto it = args.begin(), end = args.end(); it != end; it++) {
-    if(*it == "-h" || *it == "--help") {
+    if ((*it == "-h" || *it == "--help") && last_arg == false) {
       options.show_help = true;
-    }
-    if(*it == "-l") {
-      if(++it != end) {
+    } else if (*it == "-l" && last_arg == false){
         options.listening = true;
-        options.listener_filename = *it;
-      }
-    }
-    if (*it == "-c") {
+    } else if (*it == "-c" && last_arg == false) {
       options.comand_mode = true;
-      ++it;
-    }
-    if(options.comand_mode) {
-      options.comand_string += *it;
-      options.comand_string += " ";
-    }
-    else {
-        std::cerr << "Error...\n";
-        return std::nullopt;
-      }
-  }
-  return options;
-}
-*/
-std::optional<program_options> parse_args(int argc, char** argv) {
-  std::vector<std::string_view> args(argv + 1, argv + argc);
-  program_options options;
-  for(auto it = args.begin(), end = args.end(); it != end; it++) {
-    //caso -h
-    if(*it == "-h" || *it == "--help") {
-      options.show_help = true;
-      return options;
-    }
-    //caso -l
-    if(*it == "-l") {
-      if(++it != end) {
-        if(*it == "-c") {
-          if(++it != end) { 
-            options.listening_comand_mode = true;
-            for(auto itr = it; itr != args.end(); ++itr) {
-              options.listening_comand_string += *itr;
-              options.listening_comand_string += " ";
-            }
-          } else {
-            std::cerr << "Error, falta un argumento despues de -l -c\n";
-            return std::nullopt;
-          }
-        } else {
-        options.listening = true;
-        options.listener_filename = *it;
-        }
-      } else {
-        std::cerr << "Error, falta un argumento despues de -l\n";
-        return std::nullopt;
-      }
-    }
-    //caso -1
-    if(*it == "-1") {
-      if(++it != end) {
-        options.salida_estandar = true;
-        if(*it == "-2") {
-          if(++it != end) {
-            options.salida_error = true;
-            if(*it == "-c") {
-              if(++it != end) { 
-                options.comand_mode = true;
-                for(auto itr = it; itr != args.end(); ++itr) {
-                  options.comand_string += *itr;
-                  options.comand_string += " ";
-                }
-              } else {
-                std::cerr << "Error, falta un argumento despues de -1 -2 -c\n";
-                return std::nullopt;
-                }
-            }else {
-              std::cerr << "Error, parámetro incorrecto despues de -2\n";
-              return std::nullopt;
-            }
-          }else {
-            std::cerr << "Error, falta un parámetro despues de -2\n";
-            return std::nullopt;
-          }
-        } else if (*it == "-c") {
-            if(++it != end) { 
-              options.comand_mode = true;
-              for(auto itr = it; itr != args.end(); ++itr) {
-                options.comand_string += *itr;
-                options.comand_string += " ";
-              }
-            } else {
-              std::cerr << "Error, falta un argumento despues de -1 -c\n";
-              return std::nullopt;
-              }
-        } else {
-          std::cerr << "Error, falta un argumento despues de -1\n";
-          return std::nullopt;
-          }
-      } else {
-        std::cerr << "Error, falta un parámetro despues de -1\n";
-        return std::nullopt;
-      }
-    }
- //caso -2
-    if(*it == "-2") {
-      if(++it != end) {
-        options.salida_error = true;
-        if(*it == "-1") {
-          if(++it != end) {
-            options.salida_estandar = true;
-            if(*it == "-c") {
-              if(++it != end) { 
-                options.comand_mode = true;
-                for(auto itr = it; itr != args.end(); ++itr) {
-                  options.comand_string += *itr;
-                  options.comand_string += " ";
-                }
-              } else {
-                  std::cerr << "Error, falta un argumento despues de -2 -1 -c\n";
-                  return std::nullopt;
-                }
-            } else {
-                std::cerr << "Error, parámetro incorrecto despues de -2 -1\n";
-                return std::nullopt;
-              }
-          } else {
-              std::cerr << "Error, falta un parámetro despues de -2 -1\n";
-              return std::nullopt;
-            }
-        } else if (*it == "-c") {
-            if(++it != end) { 
-              options.comand_mode = true;
-              for(auto itr = it; itr != args.end(); ++itr) {
-                options.comand_string += *itr;
-                options.comand_string += " ";
-              }
-            } else {
-              std::cerr << "Error, falta un argumento despues de -2 -c\n";
-              return std::nullopt;
-              }
-        } else {
-            std::cerr << "Error, falta argumento depues de -2\n";
-            return std::nullopt;
-          }
-      } else {
-        std::cerr << "Error, falta un parámetro despues de -2\n";
-        return std::nullopt;
-      }
-    }
-    //caso -c
-    if(*it == "-c") {
-      if(++it != end) { 
-        options.comand_mode = true;
-        for(auto itr = it; itr != args.end(); ++itr) {
-          options.comand_string += *itr;
-          options.comand_string += " ";
-        }
-      } else {
-        std::cerr << "Error, falta un argumento despues de -c\n";
-        return std::nullopt;
-      }
+    } else if (*it == "-1" && last_arg == false){
+      options.salida_estandar = true;
+    } else if(*it == "-2" && last_arg == false) {
+      options.salida_error = true;
+    } else if(options.comand_mode == true){
+      last_arg = true;
+      options.v_args.emplace_back(*it);
+    } else if(options.listening == true && options.comand_mode == false) {
+      options.listener_filename = *it;
+    } else {
+      options.output_filename = *it;
     }
   }
   return options;
@@ -224,6 +85,30 @@ void print_usage(void) {
             << "./netcp [-1] [-2] -c COMANDO [ARG...]\n"
             << "./netcp -l ARCHIVO\n"
             << "./netcp -l -c COMANDO [ARG...]\n";
+}
+
+void term_signal_handler(int signum)
+{
+    const char* message;
+
+    if (signum == SIGTERM) {
+        message = "Señal SIGTERM recibida.\n";
+        quit_requested = true;
+    } else if (signum == SIGINT) {
+        message = "Señal SIGINT recibida.\n";
+        quit_requested = true;
+    } else if (signum == SIGHUP) {
+        message = "Señal SIGHUP recibida. \n";
+        quit_requested = true;
+    } else if (signum == SIGQUIT) {
+        message = "Señal SIGQUIT recibida.\n";
+        quit_requested = true;
+    } else{
+        message = "Señal desconocida recibida.\n";
+        quit_requested = true;
+    }
+
+    write( STDOUT_FILENO, message, strlen(message));
 }
 
 [[nodiscard]]
@@ -352,7 +237,7 @@ auto src_guard2=scope_exit( //esto sale mal pero funciona con g++ -o netcp -std=
 
   //fd -> descriptor de archivo, resulta que la funcion open ya está creada
   std::vector<uint8_t> buffer(1024);
-  while(buffer.size() > 0) {
+  while(buffer.size() > 0 && !quit_requested) {
   //si el tamaño del buffer es mayor a 0 eso significa que todavia hay bytes por leer. 
   std::error_code error_read = read_file(fd.value(), buffer);
  //el tamaño del buffer indica la cantidad de bytes leidos
@@ -412,8 +297,7 @@ return std::error_code (0, std::system_category());
 
 //recieve from
 std::error_code netcp_receive_file(const std::string& filename) { //al hacer el socket hay que usar bind para darle un puerto e ip
-  std::cout << "Modo escucha...\n"
-               "Esperando recepción...\n";
+  std::cout << "Modo escucha...\n";
   // NO se como gestionar señales para que en el modo escucha espere la entrada.
 
 //hacer el socket
@@ -473,8 +357,8 @@ else {
   }
 
   std::vector<uint8_t> buffer(1024);
-
-  while(true) {
+  std::cout << "Esperando recepción...\n";
+  while(!quit_requested) {
     std::error_code recieve_result = recieve_from(fd_socket, buffer, remote_address.value());
     if(recieve_result) {
       std::cerr << "Error al recibir el archivo\n";
@@ -508,30 +392,42 @@ else {
 
 int main(int argc, char** argv) {
   
+    struct sigaction term_action = {0};
+    term_action.sa_handler = &term_signal_handler;
+    term_action.sa_flags = 0;
+
+    sigaction( SIGTERM, &term_action, NULL );
+    sigaction( SIGINT, &term_action, NULL );
+    sigaction( SIGHUP, &term_action, NULL );
+    sigaction( SIGQUIT, &term_action, NULL);
+
   auto options = parse_args(argc, argv);
   if(!options) return EXIT_FAILURE;
+
+  if ((options.value().salida_estandar || options.value().salida_error) && !options.value().comand_mode) {
+    std::cerr << "Error en los parámetros, pruebe ./netcp -h\n";
+    return EXIT_FAILURE;
+  }
+  if ((options.value().salida_error || options.value().salida_estandar) && options.value().listening) {
+    std::cerr << "Error en los parámetros, pruebe ./netcp -h\n";
+    return EXIT_FAILURE;
+  }
+
   if(options.value().show_help) {
     print_usage();
     return EXIT_SUCCESS;
-  }
-  if(options.value().listening) {
+  } else if(options.value().listening && !options.value().comand_mode) {
     std::error_code fallo_listening = netcp_receive_file(options.value().listener_filename);
     if(fallo_listening) {
       fallo_listening.message();
       return fallo_listening.value();
     }
-  } else if(options.value().listening_comand_mode) {
-      std::cout << "Modo escuchando comando\n";
-  } else if (options.value().comand_mode) {
-      //std::error_code resultado_comando = nectp_comand_mode(options.value().comand_string, options.value().salida_error, options.value().salida_estandar);
-      //if(resultado_comando) {
-      //  resultado_comando.message();
-      //  return resultado_comando.value();
-      //}
+  } else if(options.value().listening && options.value().comand_mode) {
+      std::cout << "Modo escucha y comando\n";
+  } else if(options.value().comand_mode) {
       std::cout << "Modo comando\n";
-  }
-  else {
-    std::error_code fallo_sending = netcp_send_file(argv[1]);
+  } else {
+    std::error_code fallo_sending = netcp_send_file(options.value().output_filename);
     if(fallo_sending) {
       fallo_sending.message();
       return fallo_sending.value();
