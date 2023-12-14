@@ -33,10 +33,6 @@
 
 using std::experimental::scope_exit;
 
-void Usage() {
-  std::cout << "el programa se ejecuta asi: \n";
-}
-
 struct program_options {
   bool show_help = false;
   std::string output_filename;
@@ -44,6 +40,8 @@ struct program_options {
   std::string listener_filename;
   bool comand_mode = false;
   std::string comand_string;
+  bool listening_comand_mode = false;
+  std::string listening_comand_string;
   bool salida_estandar = false;
   bool salida_error = false;
 };
@@ -81,27 +79,150 @@ std::optional<program_options> parse_args(int argc, char** argv) {
   std::vector<std::string_view> args(argv + 1, argv + argc);
   program_options options;
   for(auto it = args.begin(), end = args.end(); it != end; it++) {
+    //caso -h
     if(*it == "-h" || *it == "--help") {
       options.show_help = true;
+      return options;
     }
-    if (*it == "-l") {
+    //caso -l
+    if(*it == "-l") {
       if(++it != end) {
+        if(*it == "-c") {
+          if(++it != end) { 
+            options.listening_comand_mode = true;
+            for(auto itr = it; itr != args.end(); ++itr) {
+              options.listening_comand_string += *itr;
+              options.listening_comand_string += " ";
+            }
+          } else {
+            std::cerr << "Error, falta un argumento despues de -l -c\n";
+            return std::nullopt;
+          }
+        } else {
         options.listening = true;
         options.listener_filename = *it;
-      }
-      else {
-        std::cerr << "Error...\n";
+        }
+      } else {
+        std::cerr << "Error, falta un argumento despues de -l\n";
         return std::nullopt;
       }
     }
-
+    //caso -1
+    if(*it == "-1") {
+      if(++it != end) {
+        options.salida_estandar = true;
+        if(*it == "-2") {
+          if(++it != end) {
+            options.salida_error = true;
+            if(*it == "-c") {
+              if(++it != end) { 
+                options.comand_mode = true;
+                for(auto itr = it; itr != args.end(); ++itr) {
+                  options.comand_string += *itr;
+                  options.comand_string += " ";
+                }
+              } else {
+                std::cerr << "Error, falta un argumento despues de -1 -2 -c\n";
+                return std::nullopt;
+                }
+            }else {
+              std::cerr << "Error, parámetro incorrecto despues de -2\n";
+              return std::nullopt;
+            }
+          }else {
+            std::cerr << "Error, falta un parámetro despues de -2\n";
+            return std::nullopt;
+          }
+        } else if (*it == "-c") {
+            if(++it != end) { 
+              options.comand_mode = true;
+              for(auto itr = it; itr != args.end(); ++itr) {
+                options.comand_string += *itr;
+                options.comand_string += " ";
+              }
+            } else {
+              std::cerr << "Error, falta un argumento despues de -1 -c\n";
+              return std::nullopt;
+              }
+        } else {
+          std::cerr << "Error, falta un argumento despues de -1\n";
+          return std::nullopt;
+          }
+      } else {
+        std::cerr << "Error, falta un parámetro despues de -1\n";
+        return std::nullopt;
+      }
+    }
+ //caso -2
+    if(*it == "-2") {
+      if(++it != end) {
+        options.salida_error = true;
+        if(*it == "-1") {
+          if(++it != end) {
+            options.salida_estandar = true;
+            if(*it == "-c") {
+              if(++it != end) { 
+                options.comand_mode = true;
+                for(auto itr = it; itr != args.end(); ++itr) {
+                  options.comand_string += *itr;
+                  options.comand_string += " ";
+                }
+              } else {
+                  std::cerr << "Error, falta un argumento despues de -2 -1 -c\n";
+                  return std::nullopt;
+                }
+            } else {
+                std::cerr << "Error, parámetro incorrecto despues de -2 -1\n";
+                return std::nullopt;
+              }
+          } else {
+              std::cerr << "Error, falta un parámetro despues de -2 -1\n";
+              return std::nullopt;
+            }
+        } else if (*it == "-c") {
+            if(++it != end) { 
+              options.comand_mode = true;
+              for(auto itr = it; itr != args.end(); ++itr) {
+                options.comand_string += *itr;
+                options.comand_string += " ";
+              }
+            } else {
+              std::cerr << "Error, falta un argumento despues de -2 -c\n";
+              return std::nullopt;
+              }
+        } else {
+            std::cerr << "Error, falta argumento depues de -2\n";
+            return std::nullopt;
+          }
+      } else {
+        std::cerr << "Error, falta un parámetro despues de -2\n";
+        return std::nullopt;
+      }
+    }
+    //caso -c
+    if(*it == "-c") {
+      if(++it != end) { 
+        options.comand_mode = true;
+        for(auto itr = it; itr != args.end(); ++itr) {
+          options.comand_string += *itr;
+          options.comand_string += " ";
+        }
+      } else {
+        std::cerr << "Error, falta un argumento despues de -c\n";
+        return std::nullopt;
+      }
+    }
   }
   return options;
 }
 
 void print_usage(void) {
-  std::cout << "falta un archivo como argumento\n"
-               "Modo de empleo: netcp [-h] ORIGEN\n";
+  std::cout << "Modo de empleo:\n"
+            << "./netcp -h\n"
+            << "./netcp ARCHIVO\n"
+            << "./netcp [-1] [-2] -c COMANDO [ARG...]\n"
+            << "./netcp -l ARCHIVO\n"
+            << "./netcp -l -c COMANDO [ARG...]\n";
 }
 
 [[nodiscard]]
@@ -393,8 +514,10 @@ int main(int argc, char** argv) {
       fallo_listening.message();
       return fallo_listening.value();
     }
-  } else if(options.value().comand_mode) {
-    std::cout << options.value().comand_string << "\n";
+  } else if(options.value().listening_comand_mode) {
+      std::cout << "Modo escuchando comando\n";
+  } else if (options.value().comand_mode) {
+      std::cout << "Modo comando\n";
   }
   else {
     std::error_code fallo_sending = netcp_send_file(argv[1]);
