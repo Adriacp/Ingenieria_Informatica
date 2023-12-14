@@ -219,7 +219,7 @@ std::optional<program_options> parse_args(int argc, char** argv) {
 
 void print_usage(void) {
   std::cout << "Modo de empleo:\n"
-            << "./netcp -h\n"
+            << "./netcp -h | --help\n"
             << "./netcp ARCHIVO\n"
             << "./netcp [-1] [-2] -c COMANDO [ARG...]\n"
             << "./netcp -l ARCHIVO\n"
@@ -501,10 +501,10 @@ else {
   return std::error_code (0, std::system_category());
 }
 
-std::error_code netcp_comand_mode(const std::string& name_and_args, const bool& salida_error, const bool& salida_estandar) {
-  std::cout << "Modo comando...\n";
-  subprocess proceso_hijo();
-}
+//std::error_code netcp_comand_mode(const std::string& name_and_args, const bool& salida_error, const bool& salida_estandar) {
+//  std::cout << "Modo comando...\n";
+//  subprocess proceso_hijo();
+//}
 
 int main(int argc, char** argv) {
   
@@ -523,11 +523,11 @@ int main(int argc, char** argv) {
   } else if(options.value().listening_comand_mode) {
       std::cout << "Modo escuchando comando\n";
   } else if (options.value().comand_mode) {
-      std::error_code resultado_comando = nectp_comand_mode(options.value().comand_string, options.value().salida_error, options.value().salida_estandar);
-      if(resultado_comando) {
-        resultado_comando.message();
-        return resultado_comando.value();
-      }
+      //std::error_code resultado_comando = nectp_comand_mode(options.value().comand_string, options.value().salida_error, options.value().salida_estandar);
+      //if(resultado_comando) {
+      //  resultado_comando.message();
+      //  return resultado_comando.value();
+      //}
       std::cout << "Modo comando\n";
   }
   else {
@@ -550,5 +550,7 @@ netcat -lu 8080 > testfile2 hago un testfile 2 volcando la info
 cmp testfile testfile2 para comprobar si son iguales
 */
 //exec crea un proceso hijo
-//SEÑALES, BIND MAL HECHO? COMPROBADO CON EL EMAIL DE JESUS, VARIABLES DE ENTORNO MAL USADAS AL RECIBIR PERO CREO QUE BIEN AL ENVIAR
+//SEÑALES
 //en el reciebe el ip tiene que ser siempre 0.0.0.0? porque yo tengo las de entorno
+//señales sigterm
+//principio tercera parte.
