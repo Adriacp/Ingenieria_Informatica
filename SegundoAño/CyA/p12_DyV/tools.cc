@@ -26,7 +26,7 @@
 /// @param argc numero de parámetros
 /// @param argv array con los parámetros
 void Usage(int argc, char* argv[]) {
-  if(argc < 2 || argc > 3) {
+  if(argc < 3 || argc > 5) {
     std::cerr << "Error en los parámetros, pruebe ./EMST --help para ayuda\n";
     exit(EXIT_FAILURE);
   }
@@ -42,7 +42,7 @@ void Usage(int argc, char* argv[]) {
 /// @param file archivo a abrir
 /// @param file_name nombre del archivo
 void CheckOpening(std::ifstream& file, std::string file_name) {
-  
+
   file.open(file_name);
 
   if(!file) {
@@ -137,4 +137,41 @@ std::istream& operator>>(std::istream& is, CyA::point& p) {
     is >> p.first >> p.second;
 
     return is;
+}
+
+void GenerateDotFile(std::string& outfile_dot_str, CyA::point_set& v, int numero_it) {
+  std::ofstream outfile_dot(outfile_dot_str);
+  if (!outfile_dot.is_open()) {
+    std::cerr << "Error al abrir el archivo.dot de salida.\n";
+    exit(EXIT_FAILURE);
+  }
+  outfile_dot << "graph Puntos {\n";
+  std::vector<int> vector_indices;
+  vector_indices.clear();
+  
+  for(int i = 0; i < numero_it; i++) {
+    outfile_dot << i << " [pos = \"" << v.get_input()[i].first << "," << v.get_input()[i].second << "!\"]\n";
+    for(int j = 0; j < v.get_input().size(); j++) {
+      if((v.get_hull()[i].first == v.get_input()[j].first) && v.get_hull()[i].second == v.get_input()[j].second) {
+        std::cout << j << "\n";
+        std::cout << v.get_hull()[i] << "\n" << v.get_input()[i] << "\n";
+        vector_indices.push_back(j);
+      }
+    }
+  }
+
+  outfile_dot << "\n";
+  
+  std::sort(vector_indices.begin(), vector_indices.end());
+  vector_indices.erase(std::unique(vector_indices.begin(), vector_indices.end()), vector_indices.end());
+
+
+  for(int i = 0; i < vector_indices.size(); i++) {
+    std::cout << vector_indices[i];
+  }
+  
+
+  outfile_dot << "}\n";
+
+  outfile_dot.close();
 }

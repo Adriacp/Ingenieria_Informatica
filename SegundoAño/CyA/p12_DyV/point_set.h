@@ -48,6 +48,7 @@ namespace CyA
                 void write_hull(std::ostream &os) const;
                 void write(std::ostream &os) const;
  
+                inline const point_vector& get_input(void) const {return input_; }
                 inline const point_vector& get_hull(void) const { return hull_; }
                 inline const point_vector& get_points(void) const { return input_; }
  
