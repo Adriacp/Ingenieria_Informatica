@@ -14,6 +14,7 @@
 // 07/12/2023 - Creación del código
 
 #include <iomanip>
+#include <cmath>
 
 #include "point_set.h"
 
@@ -21,7 +22,8 @@
 #define MAX_PREC 0
 
     CyA::point_set::point_set(const vector<point> &points) {
-        hull_ = points;
+        hull_.clear();
+        input_ = points;
     }
 
     void CyA::point_set::quickHull(void) {
@@ -31,6 +33,7 @@
         CyA::point max_x_point;
 
         x_bounds(min_x_point, max_x_point);
+        //std::cout << min_x_point.first << ", " << min_x_point.second << " " << max_x_point.first << " " << max_x_point.second << "\n";
 
         quickHull(CyA::line(min_x_point, max_x_point), side::LEFT);
         quickHull(CyA::line(min_x_point, max_x_point), side::RIGHT);
@@ -53,16 +56,19 @@
     }
 
     bool CyA::point_set::farthest_point(const CyA::line &l, int side, CyA::point &farthest) const {
-        farthest = CyA::point_vector::at(0);
+        
+        farthest = input_.at(0);
 
         double max_dist = 0;
 
         bool found = false;
 
-        for (const CyA::point &p : *this) {
+        for (const CyA::point &p : *this)
+        {
             const double dist = distance(l, p);
 
-            if (find_side(l, p) == side && dist > max_dist) {
+            if (find_side(l, p) == side && dist > max_dist)
+            {
                 farthest = p;
                 max_dist = dist;
                 found = true;
@@ -84,57 +90,52 @@
         return fabs(point_2_line(l, p));
     }
 
-    void CyA::point_set::x_bounds(point &min_x, point &max_x) const {
-        std::cout << "metodo x_bounds\n";
+    double CyA::point_set::distance(const point &p0, const point &p1) const {
+      return std::sqrt(std::pow(p1.first - p0.first, 2) + std::pow(p1.second - p0.second, 2));
     }
+/*
+    void CyA::point_set::x_bounds(CyA::point &min_x, CyA::point &max_x) const {
+        min_x = input_[0];
+        max_x = input_[1];
 
+        double maxDistance = distance(min_x, max_x);
+
+        for(auto i = 0; i < input_.size(); ++i) {
+            for(auto j = i+1; j < input_.size(); ++j) {
+                double currentDistance = distance(input_[i], input_[j]);
+                if (currentDistance > maxDistance) {
+                    maxDistance = currentDistance;
+                    min_x = input_[i];
+                    max_x = input_[j];
+                }
+            }
+        }
+    }
+*/
+void CyA::point_set::x_bounds(CyA::point &min_x, CyA::point &max_x) const {
+    min_x = input_[0];
+    max_x = input_[1];
+
+    for (auto i = 0; i < input_.size(); ++i) {
+        if (input_[i].first < min_x.first) {
+            min_x = input_[i];
+        }
+        if (input_[i].first > max_x.first) {
+            max_x = input_[i];
+        }
+    }
+}
     int CyA::point_set::find_side(const line &l, const point &p) const {
-        std::cout << "metodo find_side\n";
+        int val = (p.second - l.first.second) * (l.second.first - l.first.first) -
+                (l.second.second - l.first.second) * (p.first - l.first.first);
+        if (val > 0) return 1;
+        if (val < 0) return -1;
+        return 0;
     }
 
     void CyA::point_set::write_hull(std::ostream &os) const {
-        std::cout << "metodo write_hull\n";
+        for(int i = 0; i < hull_.size(); i++) {
+            os << "(" << (*hull_.begin()).first << ", "
+                << (*hull_.begin()).second << ") ";
+        }
     }
-
-
-std::ostream& operator<<(std::ostream& os, const CyA::point_vector& ps) {
-    os << ps.size() << std::endl;
-
-    for (const CyA::point &p : ps) {
-        os << p << std::endl;
-    }
-
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const CyA::line& l) {
-    os << "(" << l.first.first << ", " << l.first.second << ") " << "(" << l.second.first << ", " << l.second.second << ")\n";
-}
-
-std::ostream& operator<<(std::ostream& os, const CyA::point& p) {
-    os << std::setw(MAX_SZ) << std::fixed << std::setprecision(MAX_PREC) << p.first << "\t" << std::setw(MAX_SZ) << std::fixed << std::setprecision(MAX_PREC) << p.second;
-
-    return os;
-}
-
-std::istream& operator>>(std::istream& is, CyA::point_vector& ps) {
-    int n;
-    is >> n;
-
-    ps.clear();
-
-    for (int i = 0; i < n; ++i) {
-        CyA::point p;
-        is >> p;
-
-        ps.push_back(p);
-    }
-
-    return is;
-}
-
-std::istream& operator>>(std::istream& is, CyA::point& p) {
-    is >> p.first >> p.second;
-
-    return is;
-}

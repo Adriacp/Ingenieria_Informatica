@@ -27,20 +27,21 @@ namespace CyA
  
         enum side
         {
-                LEFT = -1,
+                LEFT = 1,
                 CENTER,
-                RIGHT
+                RIGHT = -1
         };
  
         class point_set : public point_vector
         {
         private:
+        
                 point_vector hull_;
-                //point_vector input_;
+                point_vector input_;
  
         public:
                 point_set(const vector<point> &points);
-                ~point_set(void);
+                ~point_set(void){}
  
                 void quickHull(void);
  
@@ -54,6 +55,7 @@ namespace CyA
                 void quickHull(const line &l, int side);
  
                 double distance(const line &l, const point &p) const;
+                double distance(const point &p0, const point &p1) const;
                 int find_side(const line &l, const point &p) const;
                 void x_bounds(point &min_x, point &max_x) const;
                 double point_2_line(const line &l, const point &p) const;

@@ -108,7 +108,7 @@ void term_signal_handler(int signum)
         quit_requested = true;
     }
 
-    write( STDOUT_FILENO, message, strlen(message));
+    write(STDOUT_FILENO, message, strlen(message));
 }
 
 [[nodiscard]]
@@ -378,7 +378,6 @@ else {
       break;
     }
   }
-
   //devolver recursos
   close(fd.value());
   close(fd_socket);
