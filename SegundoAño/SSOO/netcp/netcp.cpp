@@ -66,7 +66,7 @@ std::optional<program_options> parse_args(int argc, char** argv) {
       options.salida_estandar = true;
     } else if(*it == "-2" && last_arg == false) {
       options.salida_error = true;
-    } else if(options.comand_mode == true){
+    } else if(options.comand_mode == true && !options.listening){
       last_arg = true;
       options.v_args.emplace_back(*it);
     } else if(options.listening == true && options.comand_mode == false) {
@@ -197,7 +197,7 @@ else {
 //Ip
 auto remote_address = make_ip_address(ip_address, port);
 if(!remote_address) {
-  std::cerr << "Error al crear la ip\n";
+  //std::cerr << "Error al crear la ip\n";
   std::error_code error(errno, std::system_category());
   return error;
 }
@@ -208,7 +208,7 @@ if(result) {
   fd_socket = result.value();
 }
 else {
-  std::cerr << "error al crear el socket\n";
+  //std::cerr << "error al crear el socket\n";
   std::error_code error (errno, std::system_category());
   return error;
 }
@@ -221,7 +221,7 @@ else {
   if(!fd.has_value()) {
     close(fd_socket);
     std::error_code error(errno, std::system_category());
-    std::cerr << "Error al abrir el archivo\n";
+    //std::cerr << "Error al abrir el archivo\n";
     return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
   }
 
@@ -320,7 +320,7 @@ else {
 
   auto remote_address = make_ip_address(ip_address, port);
   if(!remote_address) {
-    std::cerr << "Error al crear la ip\n";
+    //std::cerr << "Error al crear la ip\n";
     std::error_code error(errno, std::system_category());
     return error;
   }
@@ -331,14 +331,14 @@ else {
     fd_socket = result.value();
   }
   else {
-    std::cerr << "error al crear el socket\n";
+    //std::cerr << "error al crear el socket\n";
     std::error_code error (errno, std::system_category());
     return error;
   }
 
   //asignar la dirección al socket
   if (bind(fd_socket, reinterpret_cast<sockaddr*>(&remote_address), sizeof(remote_address)) == -1) {
-    std::cerr << "Error al enlazar el socket a la dirección." << std::endl;
+    //std::cerr << "Error al enlazar el socket a la dirección." << std::endl;
     close(fd_socket);
     std::error_code error (errno, std::system_category());
     return error;
@@ -351,7 +351,7 @@ else {
   std::expected<int, std::error_code> fd = open_file(filename, flags, filemode);
   if(!fd.has_value()) {
     std::error_code error(errno, std::system_category());
-    std::cerr << "Error al abrir el archivo\n";
+    //std::cerr << "Error al abrir el archivo\n";
     return error; // no se como otra forma para salir del programa asi qeu supongo que esto es lo que hare
   }
 
@@ -360,7 +360,7 @@ else {
   while(!quit_requested) {
     std::error_code recieve_result = recieve_from(fd_socket, buffer, remote_address.value());
     if(recieve_result) {
-      std::cerr << "Error al recibir el archivo\n";
+      //std::cerr << "Error al recibir el archivo\n";
       close(fd.value());
       close(fd_socket);
       return recieve_result;
@@ -370,7 +370,7 @@ else {
       if(write_result) {
         close(fd.value());
         close(fd_socket);
-        std::cerr << "Error al escribir el archivo\n";
+        //std::cerr << "Error al escribir el archivo\n";
         return write_result;
       }
     } else {
@@ -435,7 +435,6 @@ int main(int argc, char** argv) {
 std::cout << "fin ok\n";
 
 return EXIT_SUCCESS;
-
 }
 /*Comprobacion:
 dd if=/dev/urandom of=testfile bs=1K count=1 iflag=fullblock //creo un testfile con datos aleatorios menor de 1K
