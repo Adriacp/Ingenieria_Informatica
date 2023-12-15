@@ -21,11 +21,15 @@
 #define MAX_SZ 3
 #define MAX_PREC 0
 
+    /// @brief Constructor de un point_set
+    /// @param points vector de puntos
     CyA::point_set::point_set(const std::vector<point> &points) {
         hull_.clear();
         input_ = points;
     }
 
+    /// @brief funcion que inicializa el algoritmo divide y venceras quickhull
+    /// @param  void
     void CyA::point_set::quickHull(void) {
         hull_.clear();
 
@@ -43,6 +47,9 @@
         hull_.erase(std::unique(hull_.begin(), hull_.end()), hull_.end());
     }
      
+    /// @brief funcion recursiva con el algoritmo divide y venceras quickhull
+    /// @param l linea
+    /// @param side lado
     void CyA::point_set::quickHull(const CyA::line &l, int side) {
         CyA::point farthest;
 
@@ -55,6 +62,11 @@
         }
     }
 
+    /// @brief funcion que calcula el punto mas lejano a una linea dada
+    /// @param l linea
+    /// @param side lado
+    /// @param farthest puto
+    /// @return punto mas lejano
     bool CyA::point_set::farthest_point(const CyA::line &l, int side, CyA::point &farthest) const {
         
         farthest = input_.at(0);
@@ -78,6 +90,10 @@
         return found;
     }
 
+    /// @brief funcion que devuelve la distancia entra una linea y un punto
+    /// @param l linea
+    /// @param p punto
+    /// @return distancia
     double CyA::point_set::point_2_line(const CyA::line &l, const CyA::point &p) const {
         const CyA::point &p1 = l.first;
         const CyA::point &p2 = l.second;
@@ -85,46 +101,42 @@
         return (p.second - p1.second) * (p2.first - p1.first) -
                (p2.second - p1.second) * (p.first - p1.first);
     }
-
+    /// @brief funcion que calcula la distancia entre un punto y una linea
+    /// @param l linea
+    /// @param p punto
+    /// @return distancia
     double CyA::point_set::distance(const CyA::line &l, const CyA::point &p) const {
         return fabs(point_2_line(l, p));
     }
 
+    /// @brief funcion que calcula la distancia entre dos puntos
+    /// @param p0 punto1
+    /// @param p1 punto2
+    /// @return distancia
     double CyA::point_set::distance(const point &p0, const point &p1) const {
       return std::sqrt(std::pow(p1.first - p0.first, 2) + std::pow(p1.second - p0.second, 2));
     }
-/*
+
+    /// @brief funcion que busca los dos puntos mas lejanos entre si
+    /// @param min_x punto mas alejado
+    /// @param max_x el otro punto
     void CyA::point_set::x_bounds(CyA::point &min_x, CyA::point &max_x) const {
         min_x = input_[0];
-        max_x = input_[1];
+        max_x = input_[0];
 
-        double maxDistance = distance(min_x, max_x);
-
-        for(auto i = 0; i < input_.size(); ++i) {
-            for(auto j = i+1; j < input_.size(); ++j) {
-                double currentDistance = distance(input_[i], input_[j]);
-                if (currentDistance > maxDistance) {
-                    maxDistance = currentDistance;
-                    min_x = input_[i];
-                    max_x = input_[j];
-                }
+        for (auto i = 0; i < input_.size(); ++i) {
+            if (input_[i].first < min_x.first) {
+                min_x = input_[i];
+            }
+            if (input_[i].first > max_x.first) {
+                max_x = input_[i];
             }
         }
-    }
-*/
-void CyA::point_set::x_bounds(CyA::point &min_x, CyA::point &max_x) const {
-    min_x = input_[0];
-    max_x = input_[0];
-
-    for (auto i = 0; i < input_.size(); ++i) {
-        if (input_[i].first < min_x.first) {
-            min_x = input_[i];
-        }
-        if (input_[i].first > max_x.first) {
-            max_x = input_[i];
-        }
-    }
 }
+    /// @brief funcion que identifica el lado en el que nos encontramos
+    /// @param l linea
+    /// @param p punto
+    /// @return lado
     int CyA::point_set::find_side(const line &l, const point &p) const {
         int val = (p.second - l.first.second) * (l.second.first - l.first.first) -
                 (l.second.second - l.first.second) * (p.first - l.first.first);
@@ -133,6 +145,8 @@ void CyA::point_set::x_bounds(CyA::point &min_x, CyA::point &max_x) const {
         return 0;
     }
 
+    /// @brief funcion que escribe el vector con los puntos finales
+    /// @param os salida
     void CyA::point_set::write_hull(std::ostream &os) const {
         for(int i = 0; i < hull_.size(); i++) {
             os << "(" << (hull_[i]).first << ", "

@@ -75,6 +75,10 @@ std::istream& operator>>(std::istream& is, CyA::point_vector& ps);
 std::istream& operator>>(std::istream& is, CyA::point& p);
 
 
+/// @brief Funcion de sobrecarga del operador << sobre un point_vector
+/// @param os salida
+/// @param ps point_vector
+/// @return os.
 std::ostream& operator<<(std::ostream& os, const CyA::point_vector& ps) {
     os << ps.size() << std::endl;
 
@@ -85,12 +89,19 @@ std::ostream& operator<<(std::ostream& os, const CyA::point_vector& ps) {
     return os;
 }
 
-
+/// @brief Funcion de sobrecarga del operador << sobre un line
+/// @param os salida
+/// @param l line
+/// @return os.
 std::ostream& operator<<(std::ostream& os, const CyA::line& l) {
     os << "(" << l.first.first << ", " << l.first.second << ") " << "(" << l.second.first << ", " << l.second.second << ")\n";
     return os;
 }
 
+/// @brief Funcion de sobrecarga del operador << sobre un point
+/// @param os salida
+/// @param p point
+/// @return os.
 std::ostream& operator<<(std::ostream& os, const CyA::point& p) {
     
     os << std::setw(MAX_SZ) << std::fixed << std::setprecision(MAX_PREC) << p.first << "\t" << std::setw(MAX_SZ) << std::fixed << std::setprecision(MAX_PREC) << p.second;
@@ -98,6 +109,10 @@ std::ostream& operator<<(std::ostream& os, const CyA::point& p) {
     return os;
 }
 
+/// @brief Funcion de sobrecarga del operador >> sobre un point_vector
+/// @param is entrada
+/// @param ps point_vector
+/// @return is.
 std::istream& operator>>(std::istream& is, CyA::point_vector& ps) {
     int n;
     is >> n;
@@ -114,6 +129,10 @@ std::istream& operator>>(std::istream& is, CyA::point_vector& ps) {
     return is;
 }
 
+/// @brief Funcion de sobrecarga del operador >> sobre un point
+/// @param is entrada
+/// @param p point_vector
+/// @return os.
 std::istream& operator>>(std::istream& is, CyA::point& p) {
     is >> p.first >> p.second;
 
