@@ -21,7 +21,7 @@
 #define MAX_SZ 3
 #define MAX_PREC 0
 
-    CyA::point_set::point_set(const vector<point> &points) {
+    CyA::point_set::point_set(const std::vector<point> &points) {
         hull_.clear();
         input_ = points;
     }
@@ -63,7 +63,7 @@
 
         bool found = false;
 
-        for (const CyA::point &p : *this)
+        for (const CyA::point &p : input_)
         {
             const double dist = distance(l, p);
 
@@ -114,7 +114,7 @@
 */
 void CyA::point_set::x_bounds(CyA::point &min_x, CyA::point &max_x) const {
     min_x = input_[0];
-    max_x = input_[1];
+    max_x = input_[0];
 
     for (auto i = 0; i < input_.size(); ++i) {
         if (input_[i].first < min_x.first) {
@@ -135,7 +135,7 @@ void CyA::point_set::x_bounds(CyA::point &min_x, CyA::point &max_x) const {
 
     void CyA::point_set::write_hull(std::ostream &os) const {
         for(int i = 0; i < hull_.size(); i++) {
-            os << "(" << (*hull_.begin()).first << ", "
-                << (*hull_.begin()).second << ") ";
+            os << "(" << (hull_[i]).first << ", "
+                << (hull_[i]).second << ") \n";
         }
     }

@@ -32,7 +32,7 @@ namespace CyA
                 RIGHT = -1
         };
  
-        class point_set : public point_vector
+        class point_set
         {
         private:
         
@@ -40,7 +40,7 @@ namespace CyA
                 point_vector input_;
  
         public:
-                point_set(const vector<point> &points);
+                point_set(const std::vector<point> &points);
                 ~point_set(void){}
  
                 void quickHull(void);
@@ -49,7 +49,7 @@ namespace CyA
                 void write(std::ostream &os) const;
  
                 inline const point_vector& get_hull(void) const { return hull_; }
-                inline const point_vector& get_points(void) const { return *this; }
+                inline const point_vector& get_points(void) const { return input_; }
  
         private:
                 void quickHull(const line &l, int side);
