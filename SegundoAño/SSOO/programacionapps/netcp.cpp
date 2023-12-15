@@ -275,7 +275,6 @@ std::error_code recieve_from(int fd, std::vector<uint8_t>& buffer, sockaddr_in& 
                                 reinterpret_cast<sockaddr*>(&address),
                                 &src_len);
   if(bytes_recieved < 0) {
-    std::cerr << "Error en los bytes recibidos\n";
     return std::error_code(errno, std::system_category());
   }
   buffer.resize(bytes_recieved);
@@ -418,7 +417,7 @@ int main(int argc, char** argv) {
   } else if(options.value().listening && !options.value().comand_mode) {
     std::error_code fallo_listening = netcp_receive_file(options.value().listener_filename);
     if(fallo_listening) {
-      fallo_listening.message();
+      std::cerr << "Error " << fallo_listening.value() << ": " << fallo_listening.message() << "\n";
       return fallo_listening.value();
     }
   } else if(options.value().listening && options.value().comand_mode) {
@@ -428,7 +427,7 @@ int main(int argc, char** argv) {
   } else {
     std::error_code fallo_sending = netcp_send_file(options.value().output_filename);
     if(fallo_sending) {
-      fallo_sending.message();
+      std::cerr << "Error " << fallo_sending.value() << ": " << fallo_sending.message() << "\n";
       return fallo_sending.value();
     }
 }
