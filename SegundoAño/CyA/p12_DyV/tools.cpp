@@ -16,6 +16,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <map>
 
 #include "point_set.h"
 
@@ -141,14 +142,16 @@ std::istream& operator>>(std::istream& is, CyA::point& p) {
 
 void GenerateDotFile(std::string& outfile_dot_str, CyA::point_set& v, int numero_it) {
   std::ofstream outfile_dot(outfile_dot_str);
+
+  std::map<int, CyA::point> mapeo_puntos;
+
   if (!outfile_dot.is_open()) {
     std::cerr << "Error al abrir el archivo.dot de salida.\n";
     exit(EXIT_FAILURE);
   }
   outfile_dot << "graph Puntos {\n";
-  std::vector<int> vector_indices;
-  vector_indices.clear();
-  
+
+  /*
   for(int i = 0; i < numero_it; i++) {
     outfile_dot << i << " [pos = \"" << v.get_input()[i].first << "," << v.get_input()[i].second << "!\"]\n";
     for(int j = 0; j < v.get_input().size(); j++) {
@@ -159,16 +162,24 @@ void GenerateDotFile(std::string& outfile_dot_str, CyA::point_set& v, int numero
       }
     }
   }
+*/
+  for(int i = 0; i < v.get_input().size(); i++) {
+    mapeo_puntos[i] = v.get_input()[i];
+  }
+  
+  for(auto itr = mapeo_puntos.begin(); itr != mapeo_puntos.end(); itr++) {
+    std::cout << itr->first << ": " << itr->second << "\n";
+  }
 
   outfile_dot << "\n";
-  
+  /*
   std::sort(vector_indices.begin(), vector_indices.end());
   vector_indices.erase(std::unique(vector_indices.begin(), vector_indices.end()), vector_indices.end());
+  */
 
-
-  for(int i = 0; i < vector_indices.size(); i++) {
-    std::cout << vector_indices[i];
-  }
+  //for(int i = 0; i < vector_indices.size(); i++) {
+  //  std::cout << vector_indices[i];
+  //}
   
 
   outfile_dot << "}\n";

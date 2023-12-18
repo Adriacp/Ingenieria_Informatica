@@ -16,8 +16,8 @@
 #include <iostream>
 #include <fstream>
 
-#include "tools.cc"
 #include "point_set.h"
+#include "tools.cpp"
 
 bool opcionD = false;
 /// @brief Función principal que se encarga de invocar a las funciones para el correcto funcionamiento del programa
