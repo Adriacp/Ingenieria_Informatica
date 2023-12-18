@@ -19,7 +19,7 @@
 #include "tools.cc"
 #include "point_set.h"
 
-bool opcionD = false;
+bool opciond = false;
 /// @brief Función principal que se encarga de invocar a las funciones para el correcto funcionamiento del programa
 /// @param argc numero de parámetros pasados por línea de comandos
 /// @param argv array con los parámetros pasados por línea de comandos
