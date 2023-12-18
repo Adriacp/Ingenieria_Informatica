@@ -149,6 +149,8 @@ void GenerateDotFile(std::string& outfile_dot_str, CyA::point_set& v, int numero
     std::cerr << "Error al abrir el archivo.dot de salida.\n";
     exit(EXIT_FAILURE);
   }
+  std::vector<int> puntos;
+  
   outfile_dot << "graph Puntos {\n";
 
   /*
@@ -171,6 +173,23 @@ void GenerateDotFile(std::string& outfile_dot_str, CyA::point_set& v, int numero
     std::cout << itr->first << ": " << itr->second << "\n";
   }
 
+  for(auto itr = mapeo_puntos.begin(); itr != mapeo_puntos.end(); itr++) {
+    for(int i = 0; i < v.get_input().size(); i++) {
+      if(itr->second == v.get_input()[i]) {
+        puntos.push_back(i);
+      }
+    }
+  }
+
+  for(int i = 0; i < puntos.size(); i++) {
+    outfile_dot << i;
+    if(i % 2 != 0) outfile_dot << "\n";
+    if(i < puntos.size()-1 && i % 2 == 0) {
+      outfile_dot << " -- ";
+    }
+  }
+  if(numero_it % 2 == 0) outfile_dot << puntos[puntos.size()-1] << " -- " << puntos[0];
+  else outfile_dot << " -- " << puntos[0];
   outfile_dot << "\n";
   /*
   std::sort(vector_indices.begin(), vector_indices.end());
