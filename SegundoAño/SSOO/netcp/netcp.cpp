@@ -386,13 +386,6 @@ else {
 std::error_code netcp_comando() {
   std::cout << "Modo comando...\n";
 
-  subprocess::stdio = redirected_io;
-
-  if(salida_estandar && !salida_error) redirected_io = subprocess::stdio::out;
-  else if(!salida_estandar && salida_error) redirected_io = subprocess::stdio::err;
-  else if (salida_estandar && salida_error) redirected_io = subprocess::stdio::outerr;
-  else redirected_io = subprocess::stdio::out;
-  
   int fds[2];
   int return_code=pipe(fds);
   if(return_code<0) {
@@ -457,11 +450,14 @@ int main(int argc, char** argv) {
       std::cout << "Modo escucha y comando\n";
       //std::error_code fallo_escucha_comando = netcp_escucha_comand();
   } else if(options.value().comand_mode) {
-      std::error_code error_comando = netcp_comando();
-      if(error_comando) {
-        std::cerr << "Error " << error_comando.value() << ": " << error_comando.message() << "\n";
-        return error_comando.value();
-      }
+    std::cout << "Modo comando...\n";
+    subprocess::stdio redirected_io;
+
+    if(options.value().salida_estandar && !options.value().salida_error) redirected_io = subprocess::stdio::out;
+    else if(!options.value().salida_estandar && options.value().salida_error) redirected_io = subprocess::stdio::err;
+    else if (options.value().salida_estandar && options.value().salida_error) redirected_io = subprocess::stdio::outerr;
+    else redirected_io = subprocess::stdio::out;
+  
   } else {
     std::error_code fallo_sending = netcp_send_file(options.value().output_filename);
     if(fallo_sending) {
