@@ -385,6 +385,14 @@ else {
 
 std::error_code netcp_comando() {
   std::cout << "Modo comando...\n";
+
+  subprocess::stdio = redirected_io;
+
+  if(salida_estandar && !salida_error) redirected_io = subprocess::stdio::out;
+  else if(!salida_estandar && salida_error) redirected_io = subprocess::stdio::err;
+  else if (salida_estandar && salida_error) redirected_io = subprocess::stdio::outerr;
+  else redirected_io = subprocess::stdio::out;
+  
   int fds[2];
   int return_code=pipe(fds);
   if(return_code<0) {
