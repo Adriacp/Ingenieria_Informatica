@@ -153,29 +153,20 @@ void GenerateDotFile(std::string& outfile_dot_str, CyA::point_set& v, int numero
   
   outfile_dot << "graph Puntos {\n";
 
-  /*
-  for(int i = 0; i < numero_it; i++) {
-    outfile_dot << i << " [pos = \"" << v.get_input()[i].first << "," << v.get_input()[i].second << "!\"]\n";
-    for(int j = 0; j < v.get_input().size(); j++) {
-      if((v.get_hull()[i].first == v.get_input()[j].first) && v.get_hull()[i].second == v.get_input()[j].second) {
-        std::cout << j << "\n";
-        std::cout << v.get_hull()[i] << "\n" << v.get_input()[i] << "\n";
-        vector_indices.push_back(j);
-      }
-    }
-  }
-*/
+
   for(int i = 0; i < v.get_input().size(); i++) {
     mapeo_puntos[i] = v.get_input()[i];
   }
   
   for(auto itr = mapeo_puntos.begin(); itr != mapeo_puntos.end(); itr++) {
-    std::cout << itr->first << ": " << itr->second << "\n";
-  }
+    outfile_dot << itr->first << "[pos = \"" << itr->second.first << ", " << itr->second.second << "!\"]\n";
+  } 
+
+  outfile_dot << "\n";
 
   for(auto itr = mapeo_puntos.begin(); itr != mapeo_puntos.end(); itr++) {
-    for(int i = 0; i < v.get_input().size(); i++) {
-      if(itr->second == v.get_input()[i]) {
+    for(int i = 0; i < v.get_hull().size(); i++) {
+      if(itr->second == v.get_hull()[i]) {
         puntos.push_back(i);
       }
     }
@@ -190,6 +181,7 @@ void GenerateDotFile(std::string& outfile_dot_str, CyA::point_set& v, int numero
   }
   if(numero_it % 2 == 0) outfile_dot << puntos[puntos.size()-1] << " -- " << puntos[0];
   else outfile_dot << " -- " << puntos[0];
+  
   outfile_dot << "\n";
   /*
   std::sort(vector_indices.begin(), vector_indices.end());
