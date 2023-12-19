@@ -18,6 +18,7 @@
 
 #include "point_set.h"
 #include "tools.cpp"
+#include <iomanip>
 
 bool opcionD = false;
 /// @brief Función principal que se encarga de invocar a las funciones para el correcto funcionamiento del programa
