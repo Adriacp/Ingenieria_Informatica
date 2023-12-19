@@ -19,6 +19,7 @@
 #include "point_set.hpp"
 #include "point_types.hpp"
 #include "sub_tree.hpp"
+#include "point_set.h"
 
 point_set::point_set(const CyA::point_vector &points) {
   emst_.clear();

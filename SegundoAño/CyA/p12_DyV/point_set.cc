@@ -153,3 +153,19 @@
                 << (hull_[i]).second << ") \n";
         }
     }
+
+    void CyA::point_set::xbounds_hull() {
+        CyA::point min_x, max_x;
+        min_x = hull_[0];
+        max_x = hull_[0];
+
+        for (auto i = 0; i < hull_.size(); ++i) {
+            if (hull_[i].first < min_x.first) {
+                min_x = hull_[i];
+            }
+            if (hull_[i].first > max_x.first) {
+                max_x = hull_[i];
+            }
+        }
+        std::cout << "(" << min_x.first << ", " << min_x.second << ") (" << max_x.first << ", " << max_x.second << "): " << distance(min_x, max_x) << "\n";
+    }

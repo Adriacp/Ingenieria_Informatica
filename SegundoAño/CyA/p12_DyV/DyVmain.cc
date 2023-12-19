@@ -71,5 +71,7 @@ int main(int argc, char* argv[]) {
     outFile.close();
   }
 
+  set_puntos.xbounds_hull();
+
  return EXIT_SUCCESS;
 }
