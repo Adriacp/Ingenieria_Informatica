@@ -11,7 +11,6 @@
 // Archivo subprocess.cpp: Inplementacion de la clase subprocess.hpp
 // 13/12/2023 - Creación del código
 
-#pragma once
 
 #include <iostream>
 

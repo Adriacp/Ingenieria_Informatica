@@ -398,15 +398,16 @@ std::error_code netcp_comando() {
     close(fds[1]);
     std::vector<uint8_t> buffer(1024);
     int nbytes=0;
-    auto address = make_ip_address("127.0.0.0", uint16_t("8080"));
+    //auto address = make_ip_address("127.0.0.0", uint16_t("8080"));
     do {
       nbytes=read(fds[0], buffer.data(), buffer.size());
-      std::error_code error_send_to = send_to(fds[0], buffer, address.value());
+      //std::error_code error_send_to = send_to(fds[0], buffer, address.value());
     }while (nbytes >0);
     if(nbytes<0) {
       return std::error_code(errno, std::system_category());
     }
   }
+  return std::error_code(0, std::system_category());
 }
 
 //std::error_code netcp_comand_mode(const std::string& name_and_args, const bool& salida_error, const bool& salida_estandar) {
